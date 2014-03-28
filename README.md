@@ -1,46 +1,45 @@
+# Sorting "random words" with MCE
 
-<> Sorting "random words" with MCE
+It is March of 2014. A group of folks at work have decided to work on
+a sorting challenge just for fun. I am the author of a Perl module named
+Many-core Engine (MCE) and wanted to see if MCE can benefit sorting.
 
-   It is March of 2014. A group of folks at work have decided to work on
-   a sorting challenge just for fun. I am the author of a Perl module named
-   Many-core Engine (MCE) and wanted to see if MCE can benefit sorting.
+   http://code.google.com/p/many-core-engine-perl/
 
-      http://code.google.com/p/many-core-engine-perl/
+My homework was mr-merge.cc for our team challenge. Although faster than
+the unix sort binary, I wanted faster and searched the web.
 
-   My homework was mr-merge.cc for our team challenge. Although faster than
-   the unix sort binary, I wanted faster and searched the web.
+One of the links pointed me to the multikey quicksort implementation by
+Bentley and Sedgewick. [1] That performs quite well and is faster than
+mr-merge. However, I wondered if sorting could go even faster and
+searched again. My search ended at this amazing site by Timo Bingmann.
 
-   One of the links pointed me to the multikey quicksort implementation by
-   Bentley and Sedgewick. [1] That performs quite well and is faster than
-   mr-merge. However, I wondered if sorting could go even faster and
-   searched again. My search ended at this amazing site by Timo Bingmann.
+   http://panthema.net/2013/parallel-string-sorting/
 
-      http://panthema.net/2013/parallel-string-sorting/
+My goal was nothing more than to take several fast sequential algorithms
+and parallelize using the MCE Perl module. I began with bs-mkqs which
+is using (char *) for the type versus (unsigned char *). So, I normalized
+on using (char *) for all the examples. The number of keys in the radix
+implementations were changed from 256 to 128 as well.
 
-   My goal was nothing more than to take several fast sequential algorithms
-   and parallelize using the MCE Perl module. I began with bs-mkqs which
-   is using (char *) for the type versus (unsigned char *). So, I normalized
-   on using (char *) for all the examples. The number of keys in the radix
-   implementations were changed from 256 to 128 as well.
+The mr-merge example was taken from an old awk script I wrote years ago.
 
-   The mr-merge example was taken from an old awk script I wrote years ago.
+## Sorting via 3 stages
 
-<> Sorting via 3 stages
-
-   <pre>
+```
    A. Partition (fast 1 character pre-sorting into individual buckets)
    B. Sequential sorting (choose an algorithm of your liking)
    C. Serialize output (runs alongside Stage B)
-   </pre>
+```
 
-   Both A and B run with many cores. MCE is currently only available for Perl.
-   Inline C was used to handle pre-sorting.
+Both A and B run with many cores. MCE is currently only available for Perl.
+Inline C was used to handle pre-sorting.
 
-   CPU affinity is applied under the Linux environment.
+CPU affinity is applied under the Linux environment.
 
-<> Directory content
+## Directory content
 
-   <pre>
+```
    bin/       mce-sort, bs-mkqs, mr-merge, ng-cradix, tb-radix, tr-radix
 
    _Inline/   The Perl Inline module creates this directory. Any changes made
@@ -53,24 +52,29 @@
 
    src/       bs-mkqs.cc, mr-merge.cc, ng-cradix.cc, tb-radix.cc, tr-radix.cc,
               main.h, Makefile
-   </pre>
+```
       
-<> Usage (the -r option is for reversing the result)
+## Usage (the -r option is for reversing the result)
 
-   Perl modules needed under CentOS/RedHat.
+Perl modules needed under CentOS/RedHat.
 
-      yum install perl-ExtUtils-MakeMaker perl-Test-Warn perl-Test-Simple
-      yum install perl-Time-HiRes
+```
+   yum install perl-ExtUtils-MakeMaker perl-Test-Warn perl-Test-Simple
+   yum install perl-Time-HiRes
+```
 
-      Inline and Parse::RecDescent modules are included under the lib dir
-      and not necessary to install.
+Inline and Parse::RecDescent modules are included under the lib dir and
+not necessary to install.
 
-   Compile the sources.
+Compile the sources.
 
-      cd src; make; cd ../bin
+```
+   cd src; make; cd ../bin
+```
 
-   Running.
+Running.
 
+```
    ./bs-mkqs [-r] FILE > sorted                 ## Compute using 1 core
    ./mce-sort -e bs-mkqs [-r] FILE > sorted     ## Compute using many cores
 
@@ -86,19 +90,20 @@
    ./mce-sort -e bs-mkqs FILE auto-1 > sorted   ## Total logical_cores - 1
    ./mce-sort -e bs-mkqs FILE auto   > sorted   ## Total logical_cores
    ./mce-sort -e bs-mkqs FILE 16     > sorted   ## 16 workers
+```
 
-###############################################################################
+## Description of selected sequential algorithms
 
-<> Description of selected sequential algorithms
-
+```
    mr-merge.cc    Merge sort implementation (my challenge assignment)
 
    bs-mkqs.cc     Multikey quicksort by Bentley and Sedgewick [1]
    ng-cradix.cc   Cache efficient radix sort by Waihong Ng    [2]
    tb-radix.cc    Radix sort implementation by Timo Bingmann  [3]
    tr-radix.cc    8-bit in-place radix sort by Tommi Rantala  [4]
+```
 
-<> References
+## References
 
 1. ** J. Bentley and R. Sedgewick.
    Fast algorithms for sorting and searching strings. In Proceedings
@@ -121,44 +126,46 @@
    Retrieval. Number 5280 in LNCS. Springer (2009) 3–14
    https://github.com/rantala/string-sorting
 
-###############################################################################
+## Testing
 
-<> Testing
+Obtain the 1 GB Random test file from below URL and extract to /dev/shm/.
+http://panthema.net/2013/parallel-string-sorting/
 
-   Obtain the 1 GB Random test file from below URL and extract to /dev/shm/.
-   http://panthema.net/2013/parallel-string-sorting/
+Create a 32gb file. Change 32 to a smaller number. Ensure at least 60%
+available space before running.
 
-   Create a 32gb file. Change 32 to a smaller number. Ensure at least 60%
-   available space before running.
+```
+   cd /dev/shm
 
-      cd /dev/shm
+   for s in `seq 1 32`; do
+      cat random.1073741824 >> random.ascii.32gb
+   done
+```
 
-      for s in `seq 1 32`; do
-         cat random.1073741824 >> random.ascii.32gb
-      done
+Are you running on a system with many CPU sockets? Use numactl to have
+memory allocated evenly across all CPU nodes. Check with numactl -H.
 
-   Are you running on a system with many CPU sockets? Use numactl to have
-   memory allocated evenly across all CPU nodes. Check with numactl -H.
+```
+   RedHat/CentOS:  sudo yum install numactl
+   Ubuntu:         sudo apt-get install numactl
 
-      RedHat/CentOS:  sudo yum install numactl
-      Ubuntu:         sudo apt-get install numactl
+   cd /dev/shm
 
-      cd /dev/shm
+   for s in `seq 1 32`; do
+      numactl -i all cat random.1073741824 >> random.ascii.32gb
+   done
+```
 
-      for s in `seq 1 32`; do
-         numactl -i all cat random.1073741824 >> random.ascii.32gb
-      done
+## Running mce-tr-radix with 16 cores
 
-<> Dual E5-2660 1600 MHz 128GB, OS: CentOS 6.2 x86_64
+The system is a dual E5-2660 1600 MHz 128GB, OS: CentOS 6.2 x86_64.
 
-   Stage C runs alongside Stage B. The total time is less than 40 seconds
-   when sending output to /dev/null and utilizing 32 cores.
+Stage C runs alongside Stage B. The total time is less than 40 seconds
+when sending output to /dev/null and utilizing 32 cores.
 
-   ## Running mce-tr-radix with 16 cores
-
+```
    ./mce-sort -e tr-radix /dev/shm/random.ascii.32gb 16 >/dev/null
 
-   <pre>
    :: Stage A   started         : 1395506176.416
       Stage A   finished (part) : 1395506185.781       9.365 seconds
 
@@ -175,13 +182,13 @@
       mce-sort -e ng-cradix ... :     69.120s
       mce-sort -e tb-radix ...  :     48.977s
       mce-sort -e tr-radix ...  :     46.583s
-   </pre>
+```
 
-   ## Running mce-tr-radix with 32 cores
+## Running mce-tr-radix with 32 cores
 
+```
    ./mce-sort -e tr-radix /dev/shm/random.ascii.32gb 32 >/dev/null
 
-   <pre>
    :: Stage A   started         : 1395474951.754
       Stage A   finished (part) : 1395474958.455       6.701 seconds
 
@@ -198,25 +205,25 @@
       mce-sort -e ng-cradix ... :     54.340s
       mce-sort -e tb-radix ...  :     43.547s
       mce-sort -e tr-radix ...  :     39.696s
-   </pre>
+```
 
-<> Notes
+## Notes
 
-   The pre-sorting logic in the MCE script is suited for string sorting only.
-   No attempt was made to sort a file having the same first character for
-   every line. So, not useful in that regard. The challenge was sorting a
-   file having many random words.
+The pre-sorting logic in the MCE script is suited for string sorting only.
+No attempt was made to sort a file having the same first character for
+every line. So, not useful in that regard. The challenge was sorting a
+file having many random words.
 
-   With that said, the 3 stage approach seems beneficial. One merely has
-   pre-sorting do as little work as necessary. Pre-sorting eradicates the
-   need for final merging in the end. The output stage begins once buckets
-   have completed. A later bucket completing first will simply remain until
-   output has completed for prior buckets.
+With that said, the 3 stage approach seems beneficial. One merely has
+pre-sorting do as little work as necessary. Pre-sorting eradicates the
+need for final merging in the end. The output stage begins once buckets
+have completed. A later bucket completing first will simply remain until
+output has completed for prior buckets.
 
-   Thank you to the folks whom have contributed fast sorting algorithms to
-   the world. Sequential sorting executables can be parallelized with
-   mce-sort (string sorting currently).
+Thank you to the folks whom have contributed fast sorting algorithms to
+the world. Sequential sorting executables can be parallelized with
+mce-sort (string sorting currently).
 
-   Kind regards,
-   Mario
+Kind regards,
+Mario
 
