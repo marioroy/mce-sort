@@ -27,9 +27,11 @@
 
 <> Sorting via 3 stages
 
+   <pre>
    A. Partition (fast 1 character pre-sorting into individual buckets)
    B. Sequential sorting (choose an algorithm of your liking)
    C. Serialize output (runs alongside Stage B)
+   </pre>
 
    Both A and B run with many cores. MCE is currently only available for Perl.
    Inline C was used to handle pre-sorting.
@@ -38,6 +40,7 @@
 
 <> Directory content
 
+   <pre>
    bin/       mce-sort, bs-mkqs, mr-merge, ng-cradix, tb-radix, tr-radix
 
    _Inline/   The Perl Inline module creates this directory. Any changes made
@@ -50,6 +53,7 @@
 
    src/       bs-mkqs.cc, mr-merge.cc, ng-cradix.cc, tb-radix.cc, tr-radix.cc,
               main.h, Makefile
+   </pre>
       
 <> Usage (the -r option is for reversing the result)
 
@@ -154,6 +158,7 @@
 
    ./mce-sort -e tr-radix /dev/shm/random.ascii.32gb 16 >/dev/null
 
+   <pre>
    :: Stage A   started         : 1395506176.416
       Stage A   finished (part) : 1395506185.781       9.365 seconds
 
@@ -170,11 +175,13 @@
       mce-sort -e ng-cradix ... :     69.120s
       mce-sort -e tb-radix ...  :     48.977s
       mce-sort -e tr-radix ...  :     46.583s
+   </pre>
 
    ## Running mce-tr-radix with 32 cores
 
    ./mce-sort -e tr-radix /dev/shm/random.ascii.32gb 32 >/dev/null
 
+   <pre>
    :: Stage A   started         : 1395474951.754
       Stage A   finished (part) : 1395474958.455       6.701 seconds
 
@@ -191,6 +198,7 @@
       mce-sort -e ng-cradix ... :     54.340s
       mce-sort -e tb-radix ...  :     43.547s
       mce-sort -e tr-radix ...  :     39.696s
+   </pre>
 
 <> Notes
 
