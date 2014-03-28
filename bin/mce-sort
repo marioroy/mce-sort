@@ -1,0 +1,459 @@
+#!/usr/bin/env perl
+###############################################################################
+## ----------------------------------------------------------------------------
+## MCE wrapper script to assist with parallelization for sort executables.
+## The partition logic is suited for string sorting as of this time.
+##
+## Mario Roy, 03/22/2014
+##
+###############################################################################
+
+use strict;
+use warnings;
+
+sub usage {
+   print STDERR "usage: mce-sort -e sortexe [-r] file > sorted\n";
+   exit 1;
+}
+
+use Cwd qw(abs_path);
+my ($prog_name, $prog_dir, $base_dir, $sort_bin, @mem_bind);
+
+BEGIN {
+   $prog_name = $0;             $prog_name =~ s{^.*[\\/]}{}g;
+   $prog_dir  = abs_path($0);   $prog_dir  =~ s{[\\/][^\\/]*$}{};
+   $base_dir  = $prog_dir;      $base_dir  =~ s{[\\/][^\\/]*$}{};
+
+   unshift @INC, "$base_dir/lib";
+
+   $ENV{PATH} = $prog_dir .($^O eq 'MSWin32' ? ';' : ':'). $ENV{PATH};
+   $ENV{PERL_INLINE_DIRECTORY} = "$base_dir/_Inline";
+
+   mkdir "$base_dir/_Inline" unless -d "$base_dir/_Inline";
+
+   usage() if (!defined $ARGV[1] or !defined $ARGV[0] or $ARGV[0] ne '-e');
+   shift; $sort_bin = shift;
+
+   if (-r '/proc/cpuinfo') {
+      my $proc_id;
+
+      open my $proc_fh, '<', '/proc/cpuinfo';
+
+      while (<$proc_fh>) {
+         if (/^processor\s+: (\d+)/) {
+            $proc_id = $1;
+         } elsif (/^physical id\s+: (\d+)/) {
+            push @{ $mem_bind[$1] }, $proc_id;
+         }
+      }
+
+      close $proc_fh;
+
+      for (0 .. @mem_bind - 1) {
+         $mem_bind[$_] = join(",", @{ $mem_bind[$_] });
+      }
+   }
+}
+
+use Time::HiRes qw(time);
+use Fcntl qw(:flock O_RDONLY);
+use CpuAffinity;
+
+use MCE::Signal qw($tmp_dir -use_dev_shm);
+use MCE::Util;
+use MCE;
+
+use MCE::Queue;
+
+###############################################################################
+## ----------------------------------------------------------------------------
+## C functions for partitioning.
+##
+###############################################################################
+
+use Inline 'C' => Config => CCFLAGS => '-std=c99 -O2 -march=native';
+use Inline 'C' => <<'END_C';
+
+   #include <stdlib.h>
+   #include <string.h>
+
+   size_t m[127], s[127], bucket_size;
+   char **a[127];
+
+   void c_init(size_t chunk_size)
+   {
+      size_t bucket;
+
+      for (bucket = 32; bucket < 127; bucket++)
+         m[bucket] = s[bucket] = 0;
+
+      bucket_size = chunk_size + 256;
+   }
+
+   void c_end()
+   {
+      size_t bucket;
+
+      for (bucket = 32; bucket < 127; bucket++) {
+         if (m[bucket]) {
+            free((void *) a[bucket]);
+            m[bucket] = 0;
+         }
+      }
+   }
+
+   AV * c_part(size_t size, char *buffer)
+   {
+      AV *ret = newAV();
+
+      size_t start_pos = 0, i, len, bucket;
+      char *p;
+
+      for (i = 0; i < size; i++) {
+         if (buffer[i] == '\n') {
+            bucket = buffer[start_pos];
+
+            if (bucket < 32) bucket = 32;
+
+            if (! m[bucket]) {
+               a[bucket] = (char *) malloc(bucket_size);
+               m[bucket] = 1;
+            }
+
+            p = a[bucket];  len = i - start_pos + 1;
+            memcpy(p + s[bucket], buffer + start_pos, sizeof(char) * len);
+            s[bucket] += len;  start_pos = i + 1;
+         }
+      }
+
+      for (bucket = 32; bucket < 127; bucket++) {
+         if (s[bucket]) {
+            // p = a[bucket]; p[ s[bucket] ] = '\0';
+            av_push(ret, newSVuv(bucket));
+            av_push(ret, newSVpvn(a[bucket], s[bucket]));
+            s[bucket] = 0;
+         }
+      }
+
+      return sv_2mortal(ret);
+   }
+
+END_C
+
+###############################################################################
+## ----------------------------------------------------------------------------
+## MCE callback functions.
+##
+###############################################################################
+
+my (@out_fh, $ropt, $file);
+
+my $n_cpu = MCE::Util::get_ncpu();
+my $Q = MCE::Queue->new();
+
+my $last_sort_time = 0;
+my $n_lock = 7;
+
+my %mce_aware = map { $_ => 1 } qw(
+   bs-mkqs mr-merge ng-cradix tb-radix tr-radix
+);
+
+sub recv_sort_time {
+
+   my ($sort_time) = @_;
+
+   $last_sort_time = $sort_time
+      if ($sort_time > $last_sort_time);
+}
+
+sub user_begin {
+
+   my ($mce, $task_id, $task_name) = @_;
+   use vars qw(@locks); our (@locks);
+
+   if ($mce->{user_args}->[0] eq 'part') {
+      if (@mem_bind) {
+         my $bind_id = (MCE->task_wid() - 1) % scalar(@mem_bind);
+         set_cpu_affinity($$, $mem_bind[$bind_id]);
+      }
+      if ($task_name eq 'main') {
+         open $locks[$_], "+>", "$tmp_dir/lock.$_" for (0 .. $n_lock - 1);
+         c_init(MCE->chunk_size());
+      }
+   }
+   else {
+      chdir $tmp_dir;
+   }
+}
+
+sub user_end {
+
+   my ($mce, $task_id, $task_name) = @_;
+
+   if ($task_name eq 'main') {
+      if ($mce->{user_args}->[0] eq 'part') {
+         c_end(); close $locks[$_] for (0 .. $n_lock - 1);
+
+         foreach my $bucket (32 .. 126) {
+            close $out_fh[$bucket];
+         }
+      }
+      else {
+         MCE->do('recv_sort_time', time());
+      }
+   }
+}
+
+sub user_part {
+
+   my ($mce, $chunk_ref, $chunk_id) = @_;
+   my $a_ref = c_part(length($$chunk_ref), $$chunk_ref);
+   my $lock;
+
+   for (my $i = 0; $i < @{ $a_ref }; $i += 2) {
+      $lock = $locks[ $a_ref->[$i] % $n_lock ];
+
+      flock $lock, LOCK_EX;
+      syswrite($out_fh[ $a_ref->[$i] ], $a_ref->[ $i + 1 ]);
+      flock $lock, LOCK_UN;
+   }
+}
+
+sub user_sort {
+
+   my ($mce, $chunk_ref, $chunk_id) = @_;
+
+   my $bucket = $$chunk_ref; chomp $bucket;
+   my @opts; push @opts, '-r' if $ropt;
+
+   if (exists $mce_aware{$sort_bin}) {
+      push @opts, ('-o', $bucket.'.s', $bucket);
+      system($sort_bin, '-e', '__MCE__', @opts);
+   }
+   elsif ($sort_bin eq 'gnu-sort' || $sort_bin eq 'sort') {
+      push @opts, ('-o', $bucket.'.s', $bucket);
+      system($sort_bin, '-S', '128M', '-T', $tmp_dir, @opts);
+   }
+   else {
+      system("$sort_bin @opts $bucket > $bucket.s");
+   }
+
+   MCE->gather($bucket);
+}
+
+###############################################################################
+## ----------------------------------------------------------------------------
+## Output function. Define gather iterator for MCE.
+##
+###############################################################################
+
+sub output {
+
+   my ($path, $out_fh) = @_;
+   my ($fh, $buf, $n_read);
+
+   return unless -e $path;
+
+   $buf = sprintf('%65536s', '');
+   sysopen($fh, $path, O_RDONLY);
+
+   while (1) {
+      $n_read = sysread($fh, $buf, 65536);
+      last if $n_read == 0;
+
+      syswrite($out_fh, $buf, $n_read);
+   }
+
+   close($fh);
+}
+
+sub gather_iterator {
+
+   my %tmp; my ($out_fh, @order) = @_;
+
+   return sub {
+      my $bucket = $_[0];
+
+      $Q->enqueue("$tmp_dir/$bucket") if -e "$tmp_dir/$bucket";
+      $tmp{$bucket} = 1;
+
+      while (@order && exists $tmp{ $order[0] }) {
+         $bucket = shift @order; delete $tmp{$bucket};
+
+         output("$tmp_dir/$bucket.s", $out_fh);
+         $Q->enqueue("$tmp_dir/$bucket.s");
+      }
+   }
+}
+
+###############################################################################
+## ----------------------------------------------------------------------------
+## Validate usage. Create file handles, one per bucket.
+##
+###############################################################################
+
+$ropt = shift if (defined $ARGV[0] && $ARGV[0] eq "-r");
+$file = shift or usage();
+
+die "$0: $file: No such file or directory\n"
+   unless -e $file;
+
+die "$0: $file: Is a directory\n"
+   if -d $file;
+
+exit 0 if (-s $file == 0);
+
+foreach my $bucket (32 .. 126) {
+   open my $fh, ">", "$tmp_dir/$bucket";
+   $out_fh[$bucket] = $fh;
+}
+
+###############################################################################
+## ----------------------------------------------------------------------------
+## Configure MCE. Pre-sort data afterwards.
+##
+###############################################################################
+
+my ($chunk_size, $start_a, $start_b, $lapse);
+
+my $max_workers = shift;
+my $file_size   = -s $file;
+
+if    ($file_size > 67_108_864 * 32) { $chunk_size = '8M'; }
+elsif ($file_size > 67_108_864 * 16) { $chunk_size = '4M'; }
+elsif ($file_size > 67_108_864 *  8) { $chunk_size = '2M'; }
+else                                 { $chunk_size = '1M'; }
+
+unless (defined $max_workers) {
+   $max_workers = (($n_cpu > 15) ? 'auto/2' : 'auto');
+}
+
+MCE->new(
+   user_begin => \&user_begin, user_end => \&user_end,
+
+   user_tasks => [{
+      max_workers => $max_workers, use_slurpio => 1, parallel_io => 1,
+      task_name => 'main',
+
+      user_func => sub {
+         my ($mce, $chunk_ref, $chunk_id) = @_;
+
+         if ($mce->{user_args}->[0] eq 'part') {
+            user_part($mce, $chunk_ref, $chunk_id);
+         } else {
+            user_sort($mce, $chunk_ref, $chunk_id);
+         }
+      },
+
+      task_end => sub {
+         my ($mce, $task_id, $task_name) = @_;
+         return if ($mce->{user_args}->[0] eq 'part');
+
+         $Q->enqueue((undef) x 3);
+      }
+
+   },{
+      max_workers => 3, task_name => 'aux',
+
+      user_func => sub {
+         my ($mce) = @_;
+         return if ($mce->{user_args}->[0] eq 'part');
+
+         foreach my $bucket (32 .. 126) {
+            close $out_fh[$bucket];
+         }
+
+         while (my $path = $Q->dequeue()) {
+            unlink $path;
+         }
+      }
+
+   }]
+
+)->spawn();
+
+$start_a = time();
+printf STDERR "\n";
+printf STDERR ":: Stage A   started         : %14.03f\n", $start_a;
+
+MCE->process($file, {
+   user_args => [ 'part' ], chunk_size => $chunk_size
+});
+
+$lapse = time();
+printf STDERR "   Stage A   finished (part) : %14.03f  ", $lapse;
+printf STDERR "%10.03f seconds\n", $lapse - $start_a;
+
+###############################################################################
+## ----------------------------------------------------------------------------
+## Compute which buckets to process first. This will sort large buckets first
+## if meeting threshold. Otherwise, processing is in bucket order allowing
+## output to begin early on.
+##
+###############################################################################
+
+my (%size, @order, @list); my $max = 0;
+
+foreach my $bucket ( $ropt ? reverse(32 .. 126) : (32 .. 126) ) {
+   close $out_fh[$bucket];
+   my $sz = -s "$tmp_dir/$bucket";
+
+   if ($sz > 0) {
+      $max = $sz if ($max < $sz);
+      $size{"$sz.$bucket"} = 1;
+      push @order, $bucket;
+   }
+}
+
+if (@order) {
+   my %tmp; $max *= 0.40;
+
+   $start_b = time();
+   printf STDERR "\n";
+   printf STDERR ":: Stage B/C started         : %14.03f\n", $start_b;
+
+   foreach ( sort { $b <=> $a } keys %size ) {
+      /^(\d+)\.(\d+)/;
+      if ($1 > $max) {
+         $tmp{$2} = 1; push @list, $2;
+      }
+   }
+
+   if (scalar(keys %tmp) < 20) {
+      foreach (@order) {
+         push @list, $_ unless exists $tmp{$_};
+      }
+   }
+   else {
+      @list = @order;
+   }
+
+   open my $list_fh, ">", "$tmp_dir/list";
+   print $list_fh join("\n", @list) . "\n";
+   close $list_fh;
+
+   MCE->process("$tmp_dir/list", {
+      user_args => [ 'sort' ], chunk_size => 1,
+      gather => gather_iterator(\*STDOUT, @order)
+   });
+
+   printf STDERR "   Stage B   finished (sort) : %14.03f  ", $last_sort_time;
+   printf STDERR "%10.03f seconds\n", $last_sort_time - $start_b;
+
+   $lapse = time();
+   printf STDERR "   Stage C   finished (outp) : %14.03f  ", $lapse;
+   printf STDERR "%10.03f seconds\n", $lapse - $start_b;
+}
+
+###############################################################################
+## ----------------------------------------------------------------------------
+## Shutdown MCE.
+##
+###############################################################################
+
+$lapse = time();
+printf STDERR "\n                  total time : %14.03f  ", $lapse;
+printf STDERR "%10.03f seconds\n\n", $lapse - $start_a;
+
+MCE->shutdown();
+
