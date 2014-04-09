@@ -85,8 +85,6 @@ This module exports 2 subroutines: get_cpu_affinity and set_cpu_affinity.
 
  use CpuAffinity;
 
- my $num_cpus = get_num_cpus();
-
  my $affinity = get_cpu_affinity($$);
 
  my $status = set_cpu_affinity($$, [1,3]);  # Returns 1 if successful

@@ -5,7 +5,7 @@ MCE::Examples - A list of examples demonstrating Many-core Engine
 
 =head1 VERSION
 
-This document describes MCE::Examples version 1.510
+This document describes MCE::Examples version 1.511
 
 =head1 DESCRIPTION
 
@@ -81,6 +81,9 @@ count aggregation.
              An implementation of wide finder utilizing MCE.
              As fast as MMAP IO when file resides in OS FS cache.
              2x ~ 3x faster when reading directly from disk.
+
+   utf8.pl
+             A demonstration of MCE processing unicode input_data.
 
 =head1 CHUNK_SIZE => 1 (in essence, wanting no chunking on input data)
 
