@@ -206,7 +206,7 @@ includes the pre-sorting time.
 
 ```
 
-## Output from mce-sort -e tr-radix using 32 logical PEs
+## Output from -e tr-radix using 32 logical PEs
 
 ```
    $ ./mce-sort --max-workers=32 --bm --check --no-output \
@@ -268,7 +268,7 @@ includes the pre-sorting time.
       mce-sort -e tr-radix   :  9.306 + 18.156   =  27.462s
 ```
 
-## Output from mce-sort -e tr-radix using 8 cores
+## Output from -e tr-radix using 8 cores
 
 ```
    $ ./mce-sort --max-workers=8 --bm --check --no-output \
@@ -299,7 +299,7 @@ includes the pre-sorting time.
       mce-sort -e tr-radix   : 16.141 +  31.115  =  47.256s
 ```
 
-## Output from mce-sort -e tr-radix using 4 cores
+## Output from -e tr-radix using 4 cores
 
 ```
    $ ./mce-sort --max-workers=4 --bm --check --no-output \
