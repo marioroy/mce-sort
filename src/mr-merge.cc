@@ -6,7 +6,7 @@
  * guaranteed for any purpose. The writer does not offer any warranties
  * nor does he accept any liabilities with respect to the code.
  *
- * Mario Roy, 03/15/2014
+ * Mario Roy, 04/22/2014
  *
  * usage: mr-merge [-r] file [-o sorted]
  */
@@ -91,9 +91,8 @@ mergesort(char **a, size_t n)
 
 } // namespace mr_merge
 
-void sort_main(char **a, size_t n, int mce_flag)
+void sort_main(char **a, size_t n)
 {
-   if (mce_flag) mr_merge::depth = 1;
    mr_merge::mergesort(a, n);
 }
 

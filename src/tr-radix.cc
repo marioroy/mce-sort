@@ -128,11 +128,8 @@ void msd_ci(char** strings, size_t n, size_t depth)
 
 } // namespace rantala
 
-void sort_main(char **a, size_t n, int mce_flag)
+void sort_main(char **a, size_t n)
 {
-   if (mce_flag)
-      rantala::msd_ci(a, n, 1);
-   else
-      rantala::msd_ci(a, n, 0);
+   rantala::msd_ci(a, n, 0);
 }
 

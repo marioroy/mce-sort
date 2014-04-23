@@ -138,11 +138,8 @@ ssort2(char **a, size_t n, size_t depth)
 
 } // namespace bs_mkqs
 
-void sort_main(char **a, size_t n, int mce_flag)
+void sort_main(char **a, size_t n)
 {
-   if (mce_flag)
-      bs_mkqs::ssort2(a, n, 1);
-   else
-      bs_mkqs::ssort2(a, n, 0);
+   bs_mkqs::ssort2(a, n, 0);
 }
 

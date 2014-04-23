@@ -195,11 +195,8 @@ msd_CI5_16bit(string* strings, size_t n, size_t depth)
 
 } // namespace tb_radix
 
-void sort_main(char **a, size_t n, int mce_flag)
+void sort_main(char **a, size_t n)
 {
-   if (mce_flag)
-      tb_radix::msd_CI5_16bit(a, n, 1);
-   else
-      tb_radix::msd_CI5_16bit(a, n, 0);
+   tb_radix::msd_CI5_16bit(a, n, 0);
 }
 

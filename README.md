@@ -1,4 +1,4 @@
-# Sorting "random words" with MCE
+# Sorting "random words" with Many-core Engine for Perl
 
 It is March of 2014. A group of folks at work have decided to work on
 a sorting challenge just for fun. I am the author of a Perl module named
@@ -17,25 +17,10 @@ searched again. My search ended at this amazing site by Timo Bingmann.
    http://panthema.net/2013/parallel-string-sorting/
 
 My goal was nothing more than to take several fast sequential algorithms
-and parallelize using the MCE Perl module. I began with bs-mkqs which
-is using (char *) for the type versus (unsigned char *). So, I normalized
-on using (char *) for all the examples. The number of keys in the radix
-implementations were changed from 256 to 128 as well.
-
-The mr-merge example was taken from an old awk script I wrote years ago.
-
-## Sorting via 3 stages
-
-```
-   A. Partition (fast 1 character pre-sorting into individual buckets)
-   B. Sequential sorting (choose an algorithm of your liking)
-   C. Serialize output (runs alongside Stage B)
-```
-
-Both A and B run with many cores. MCE is currently only available for Perl.
-Inline C was used to handle pre-sorting.
-
-CPU affinity is applied under the Linux environment.
+and parallelize using the MCE Perl module. I began with bs-mkqs which is
+using 7-bit versus 8-bit for the array type. So, I normalized on using
+7-bit for all the examples. The number of keys in the radix implementations
+were changed from 256 to 128 as well.
 
 ## Directory content
 
@@ -47,20 +32,20 @@ CPU affinity is applied under the Linux environment.
               first time. This is due to Inline compiling C and caching to
               this directory.
 
-   lib/       Perl modules: MCE, Inline, Parse::RecDescent (needed by Inline),
-              CpuAffinity
+   lib/       Perl modules MCE, Inline, Parse::RecDescent (needed by Inline), 
+              and CpuAffinity.
 
    src/       bs-mkqs.cc, mr-merge.cc, ng-cradix.cc, tb-radix.cc, tr-radix.cc,
-              main.h, Makefile
+              main.h, and the Makefile.
 ```
       
-## Usage (the -r option is for reversing the result)
+## Usage
 
-Perl modules needed under CentOS/RedHat.
+Required Perl modules under CentOS/RedHat.
 
 ```
-   yum install perl-ExtUtils-MakeMaker perl-Test-Warn perl-Test-Simple
-   yum install perl-Time-HiRes
+   yum install perl-ExtUtils-MakeMaker
+   yum install perl-Time-HiRes  (not included with Perl 5.8.x)
 ```
 
 Inline and Parse::RecDescent modules are included under the lib dir and
@@ -69,30 +54,45 @@ not necessary to install.
 Compile the sources.
 
 ```
-   cd src; make; cd ../bin
+   cd src; make distclean; make; cd ../bin
 ```
 
 Running.
 
 ```
-   ./bs-mkqs [-r] FILE > sorted                 ## Compute using 1 core
-   ./mce-sort -e bs-mkqs [-r] FILE > sorted     ## Compute using many cores
+   $ ./bs-mkqs [-r] FILE > sorted               ## Compute using 1 core
+   $ ./mce-sort -e bs-mkqs [-r] FILE > sorted   ## Compute using many cores
 
-   To specify the number of workers, pass $N after file:
+   $ ./mce-sort
 
-   perl mce-sort -e bs-mkqs FILE $N > sorted
-      ./mce-sort -e bs-mkqs FILE $N > sorted
+   NAME
+      mce-sort -- wrapper script for parallelizing sort binaries
 
-   Where $N is the number of processes. The default is 'auto/2' when
-   the box has greater than 15 logical cores, otherwise 'auto'.
+   SYNOPSIS
+      mce-sort [options] -e SORTEXE [-r] FILE
 
-   ./mce-sort -e bs-mkqs FILE auto/2 > sorted   ## Total logical_cores / 2
-   ./mce-sort -e bs-mkqs FILE auto-1 > sorted   ## Total logical_cores - 1
-   ./mce-sort -e bs-mkqs FILE auto   > sorted   ## Total logical_cores
-   ./mce-sort -e bs-mkqs FILE 16     > sorted   ## 16 workers
+   DESCRIPTION
+      The mce-sort script utilizes MCE to sort FILE in parallel.
+      The partition logic is suited for string sorting as of this time.
+
+      The following options are available:
+
+      --max-workers=NUM  Specify the number of workers for MCE (default auto)
+      --parallel-io      Enable parallel IO for stage A partitioning of data
+
+      --bm               Display benchmark info
+      --check            Check array after sorted
+      --no-output        Omit sorted output
+
+      -e SORTEXE         Specify the sort command
+      -r                 Reverse output order
+
+   EXAMPLES
+      mce-sort --numworkers=8 --bm --check --no-output -e tr_radix ascii.4gb
+      mce-sort --numworkers=4 -e tr_radix ascii.4gb > sorted.4gb
 ```
 
-## Description of selected sequential algorithms
+## Description of sequential algorithms
 
 ```
    mr-merge.cc    Merge sort implementation (my challenge assignment)
@@ -132,7 +132,8 @@ Obtain the 1 GB Random test file from below URL and extract to /dev/shm/.
 http://panthema.net/2013/parallel-string-sorting/
 
 Create a 32gb file. Change 32 to a smaller number. Ensure at least 60%
-available space before running.
+available space before running. The following will create a 32gb file
+containing over 3.27 billion strings.
 
 ```
    cd /dev/shm
@@ -154,76 +155,191 @@ memory allocated evenly across all CPU nodes. Check with numactl -H.
    for s in `seq 1 32`; do
       numactl -i all cat random.1073741824 >> random.ascii.32gb
    done
+
+   numactl -H
 ```
 
-## Running mce-tr-radix with 16 cores
+## Sorting
 
-The system is a dual E5-2660 1600 MHz 128GB, OS: CentOS 6.2 x86_64.
-
-Stage C runs alongside Stage B. The total time is less than 40 seconds
-when sending output to /dev/null and utilizing 32 cores.
+The sorting process is done in 3 stages. Inline C is used to handle
+pre-sorting. CPU affinity is applied under the Linux environment.
 
 ```
-   ./mce-sort -e tr-radix /dev/shm/random.ascii.32gb 16 >/dev/null
-
-   :: Stage A   started         : 1395506176.416
-      Stage A   finished (part) : 1395506185.781       9.365 seconds
-
-   :: Stage B/C started         : 1395506185.783
-      Stage B   finished (sort) : 1395506222.619      36.836 seconds
-      Stage C   finished (outp) : 1395506222.999      37.216 seconds
-
-                     total time : 1395506222.999      46.583 seconds
-
-   :: Summary Total time
-
-      mce-sort -e bs-mkqs ...   :     87.199s
-      mce-sort -e mr-merge ...  :    129.525s
-      mce-sort -e ng-cradix ... :     69.120s
-      mce-sort -e tb-radix ...  :     48.977s
-      mce-sort -e tr-radix ...  :     46.583s
+   A. Partition (fast 1 character pre-sorting into individual buckets)
+   B. Sequential sorting (choose an algorithm of your liking)
+   C. Serialize output (runs alongside Stage B)
 ```
 
-## Running mce-tr-radix with 32 cores
+## Absolute run time in seconds
+
+The system is a dual Intel Xeon E5-2660 (v1), 1600 MHz 128GB, running
+Fedora 20 x86_64. The box has 16 real cores (32 logical PEs).
+
+Running with 1 core takes 405.848 seconds to sort the pointer array.
 
 ```
-   ./mce-sort -e tr-radix /dev/shm/random.ascii.32gb 32 >/dev/null
+   $ ./tr-radix --bm --check --no-output /dev/shm/random.ascii.32gb
 
-   :: Stage A   started         : 1395474951.754
-      Stage A   finished (part) : 1395474958.455       6.701 seconds
+   LOAD:   13.137478      load into memory
+   PTRA:   56.706502      fill pointer array
+   SORT:  405.848093      sort pointer array
+   CHKA:  168.436225      check sorted
+   SAVE:    0.000000      this is 0.0 due to passing --no-output
+   FREE:    1.167123      free memory
+   PASS:    1             means the check succeeded, used by MCE
+```
 
-   :: Stage B/C started         : 1395474958.457
-      Stage B   finished (sort) : 1395474990.099      31.642 seconds
-      Stage C   finished (outp) : 1395474991.450      32.994 seconds
+Compare 405.848 seconds (1 core) with 27.462 seconds (16 cores) for
+mce-sort -e tr-radix. That is quite good considering the later also
+includes the pre-sorting time.
 
-                     total time : 1395474991.450      39.696 seconds
+```
+    PEs                            4        8       16       32
+   =============================================================
+    mce-sort -e bs-mkqs   |  180.555   99.660   59.073   52.556
+    mce-sort -e mr-merge  |  311.366  175.254  106.111   90.435
+    mce-sort -e ng-cradix |  150.988   80.833   44.574   34.342
+    mce-sort -e tb-radix  |   98.444   53.737   31.283   25.582
+    mce-sort -e tr-radix  |   85.836   47.256   27.462   22.286
+   =============================================================
+   Random, n = 3.27 billion strings, N = 32 Gi File
 
-   :: Summary Total time
+```
 
-      mce-sort -e bs-mkqs ...   :     75.004s
-      mce-sort -e mr-merge ...  :    107.328s
-      mce-sort -e ng-cradix ... :     54.340s
-      mce-sort -e tb-radix ...  :     43.547s
-      mce-sort -e tr-radix ...  :     39.696s
+## Output from mce-sort -e tr-radix using 32 logical PEs
+
+```
+   $ ./mce-sort --max-workers=32 --bm --check --no-output \
+        --parallel-io -e tr-radix /dev/shm/random.ascii.32gb 
+
+   Stage A   started         :  1398207596.304
+   Stage A   finished (part) :  1398207603.347       7.044s
+
+   Stage B/C started         :  1398207603.348
+   Stage B   finished (sort) :  1398207633.857      30.509s
+
+             load partitions :        1.486731
+             fill ptr arrays :        2.898013
+             sort ptr arrays :       15.241647
+             check sorted    :       10.768132 (OK)
+             free memory     :        0.114815
+
+   Stage C   finished (outp) :  1398207633.991      30.643s
+
+                  total time :  1398207633.991      37.687s
+
+   Absolute run time (partition and sort_ptr_arrays)
+
+      mce-sort -e bs-mkqs    :  7.159 + 45.397   =  52.556s
+      mce-sort -e mr-merge   :  7.148 + 83.287   =  90.435s
+      mce-sort -e ng-cradix  :  7.139 + 27.203   =  34.342s
+      mce-sort -e tb-radix   :  7.084 + 18.498   =  25.582s
+      mce-sort -e tr-radix   :  7.044 + 15.242   =  22.286s
+```
+
+## Ouput from mce-sort -e tr-radix using 16 cores
+
+```
+   $ ./mce-sort --max-workers=16 --bm --check --no-output \
+        --parallel-io -e tr-radix /dev/shm/random.ascii.32gb 
+
+   Stage A   started         :  1398210591.483
+   Stage A   finished (part) :  1398210600.789       9.306s
+
+   Stage B/C started         :  1398210600.790
+   Stage B   finished (sort) :  1398210636.227      35.437s
+
+             load partitions :        1.221781
+             fill ptr arrays :        3.966185
+             sort ptr arrays :       18.156220
+             check sorted    :       11.988952 (OK)
+             free memory     :        0.103446
+
+   Stage C   finished (outp) :  1398210636.250      35.460s
+
+                  total time :  1398210636.251      44.767s
+
+   Absolute run time (partition and sort_ptr_arrays)
+
+      mce-sort -e bs-mkqs    :  9.275 + 49.798   =  59.073s
+      mce-sort -e mr-merge   :  9.235 + 96.876   = 106.111s
+      mce-sort -e ng-cradix  :  9.367 + 35.207   =  44.574s
+      mce-sort -e tb-radix   :  9.289 + 21.994   =  31.283s
+      mce-sort -e tr-radix   :  9.306 + 18.156   =  27.462s
+```
+
+## Output from mce-sort -e tr-radix using 8 cores
+
+```
+   $ ./mce-sort --max-workers=8 --bm --check --no-output \
+        --parallel-io -e tr-radix /dev/shm/random.ascii.32gb 
+
+   Stage A   started         :  1398211434.990
+   Stage A   finished (part) :  1398211451.131      16.141s
+
+   Stage B/C started         :  1398211451.132
+   Stage B   finished (sort) :  1398211511.304      60.171s
+
+             load partitions :        2.001858
+             fill ptr arrays :        7.352689
+             sort ptr arrays :       31.115341
+             check sorted    :       19.534765 (OK)
+             free memory     :        0.166683
+
+   Stage C   finished (outp) :  1398211511.326      60.193s
+
+                  total time :  1398211511.326      76.336s
+
+   Absolute run time (partition and sort_ptr_arrays)
+
+      mce-sort -e bs-mkqs    : 16.152 +  83.508  =  99.660s
+      mce-sort -e mr-merge   : 16.324 + 158.930  = 175.254s
+      mce-sort -e ng-cradix  : 16.480 +  64.353  =  80.833s
+      mce-sort -e tb-radix   : 16.256 +  37.481  =  53.737s
+      mce-sort -e tr-radix   : 16.141 +  31.115  =  47.256s
+```
+
+## Output from mce-sort -e tr-radix using 4 cores
+
+```
+   $ ./mce-sort --max-workers=4 --bm --check --no-output \
+        --parallel-io -e tr-radix /dev/shm/random.ascii.32gb 
+
+   Stage A   started         :  1398212323.491
+   Stage A   finished (part) :  1398212353.307      29.816s
+
+   Stage B/C started         :  1398212353.308
+   Stage B   finished (sort) :  1398212460.899     107.592s
+
+             load partitions :        3.667963
+             fill ptr arrays :       13.764580
+             sort ptr arrays :       56.020127
+             check sorted    :       33.846885 (OK)
+             free memory     :        0.291969
+
+   Stage C   finished (outp) :  1398212460.923     107.616s
+
+                  total time :  1398212460.924     137.433s
+
+   Absolute run time (partition and sort_ptr_arrays)
+
+      mce-sort -e bs-mkqs    : 29.797 + 150.758  = 180.555s
+      mce-sort -e mr-merge   : 29.599 + 281.767  = 311.366s
+      mce-sort -e ng-cradix  : 30.003 + 120.985  = 150.988s
+      mce-sort -e tb-radix   : 29.989 +  68.455  =  98.444s
+      mce-sort -e tr-radix   : 29.816 +  56.020  =  85.836s
 ```
 
 ## Notes
 
-The pre-sorting logic in the MCE script is suited for string sorting only.
-No attempt was made to sort a file having the same first character for
-every line. So, not useful in that regard. The challenge was sorting a
-file having many random words.
-
-With that said, the 3 stage approach seems beneficial. One merely has
-pre-sorting do as little work as necessary. Pre-sorting eradicates the
-need for final merging in the end. The output stage begins once buckets
-have completed. A later bucket completing first will simply remain until
-output has completed for prior buckets.
+The pre-sorting logic is suited for string sorting only. No attempt was made
+to sort a file having the same first character for every line. So, not useful
+in that regard. The challenge was sorting a file having many random words.
 
 Thank you to the folks whom have contributed fast sorting algorithms to
 the world. Sequential sorting executables can be parallelized with
 mce-sort (string sorting currently).
 
-Kind regards,
+Regards,
 Mario
 

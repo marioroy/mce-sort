@@ -253,7 +253,7 @@ CRadix(LPPSTR a, UINT n)
 
 } // namespace ng_cradix
 
-void sort_main(char **a, size_t n, int mce_flag)
+void sort_main(char **a, size_t n)
 {
    ng_cradix::CRadix(a, n);
 }
