@@ -5,7 +5,7 @@ MCE::Core - Documentation describing the core API for Many-core Engine
 
 =head1 VERSION
 
-This document describes MCE::Core version 1.511
+This document describes MCE::Core version 1.513
 
 =head1 SYNOPSIS
 
@@ -16,8 +16,8 @@ This is a simplistic use case of MCE running with 4 workers.
    my $mce = MCE->new(
       max_workers => 4,
       user_func => sub {
-         my ($self) = @_;
-         print "Hello from ", $self->wid, "\n";
+         my ($mce) = @_;
+         print "Hello from ", $mce->wid, "\n";
       }
    );
 
@@ -47,7 +47,7 @@ of 0,1,2 makes it more legible when accessing the array elements.
    use MCE CONST => 1;              ## Same thing in 1.415 and later
 
    user_func => sub {
-    # my ($self, $chunk_ref, $chunk_id) = @_;
+    # my ($mce, $chunk_ref, $chunk_id) = @_;
       print "Hello from ", $_[SELF]->wid, "\n";
    }
 
@@ -56,7 +56,7 @@ of 0,1,2 makes it more legible when accessing the array elements.
    use MCE;
 
    user_func => sub {
-    # my ($self, $chunk_ref, $chunk_id) = @_;
+    # my ($mce, $chunk_ref, $chunk_id) = @_;
       print "Hello from ", MCE->wid, "\n";
    }
 
@@ -188,7 +188,7 @@ Below, a new instance is configured with all available options.
           ## MCE release 1.4 adds a new parameter to allow one to
           ## specify arbitrary arguments such as a string, an ARRAY
           ## or a HASH reference. Workers can access this directly:
-          ##    my $args = $self->{user_args};
+          ##    my $args = $mce->{user_args};
 
       user_begin   => \&user_begin,      ## Default undef
       user_func    => \&user_func,       ## Default undef
@@ -347,12 +347,12 @@ MCE->exit (children and threads), or die.
 The format of $e->{pid} is PID_123 for children and THR_123 for threads.
 
    sub on_post_exit {
-      my ($self, $e) = @_;
+      my ($mce, $e) = @_;
       print "$e->{wid}: $e->{pid}: $e->{status}: $e->{msg}: $e->{id}\n";
    }
 
    sub user_func {
-      my $self = $_[0];
+      my $mce = $_[0];
       MCE->exit(0, 'ok', 'pebbles');
    }
 
@@ -377,14 +377,14 @@ called immediately whereas the latter is called after all workers have
 completed processing or running.
 
    sub on_post_run {
-      my ($self, $status_ref) = @_;
+      my ($mce, $status_ref) = @_;
       foreach my $e ( @{ $status_ref } ) {
          print "$e->{wid}: $e->{pid}: $e->{status}: $e->{msg}: $e->{id}\n";
       }
    }
 
    sub user_func {
-      my $self = $_[0];
+      my $mce = $_[0];
       MCE->exit(0, 'ok', 'pebbles');
    }
 
@@ -434,7 +434,7 @@ The construction for user_func is as follow when chunk_size > 1 and assuming
 use_slurpio equals 0.
 
    user_func => sub {
-      my ($self, $chunk_ref, $chunk_id) = @_;
+      my ($mce, $chunk_ref, $chunk_id) = @_;
 
       ## $_ is $chunk_ref->[0] when chunk_size equals 1
       ## $_ is $chunk_ref otherwise; $_ can be used below
@@ -477,7 +477,7 @@ reference for input_data.
     # input_data => input_iterator(10, 30, 2),
 
       user_func => sub {
-         my ($self, $chunk_ref, $chunk_id) = @_;
+         my ($mce, $chunk_ref, $chunk_id) = @_;
          MCE->print("$_: ", $_ * 2, "\n");
       }
 
@@ -627,7 +627,7 @@ to have the process stop, otherwise will never end.
       max_workers => 4, input_data => make_iterator(\@a),
 
       user_func => sub {
-         my ($self, $chunk_ref, $chunk_id) = @_;
+         my ($mce, $chunk_ref, $chunk_id) = @_;
          MCE->print($_, "\n");
       }
 
@@ -673,7 +673,7 @@ greater than $max.
       input_data => make_iterator(\@a, 100),
 
       user_func => sub {
-         my ($self, $chunk_ref, $chunk_id) = @_;
+         my ($mce, $chunk_ref, $chunk_id) = @_;
          MCE->print("$chunk_id: ", join(' ', @{ $chunk_ref }), "\n");
       }
 
@@ -713,7 +713,7 @@ Sequence can be defined using an array or a hash reference.
       },
 
       user_func => sub {
-         my ($self, $n, $chunk_id) = @_;
+         my ($mce, $n, $chunk_id) = @_;
          print $n, " from ", MCE->wid(), " id ", $chunk_id, "\n";
       }
    );
@@ -800,19 +800,19 @@ worker during a run.
 MCE 1.510 passes 2 additional parameters ($task_id and $task_name).
 
    sub user_begin {                   ## Called once at the beginning
-      my ($self, $task_id, $task_name) = @_;
-      $self->{wk_total_rows} = 0;
+      my ($mce, $task_id, $task_name) = @_;
+      $mce->{wk_total_rows} = 0;
    }
 
    sub user_func {                    ## Called while processing
-      my $self = shift;
-      $self->{wk_total_rows} += 1;
+      my $mce = shift;
+      $mce->{wk_total_rows} += 1;
    }
 
    sub user_end {                     ## Called once at the end
-      my ($self, $task_id, $task_name) = @_;
+      my ($mce, $task_id, $task_name) = @_;
       printf "## %d: Processed %d rows\n",
-         MCE->wid(), $self->{wk_total_rows};
+         MCE->wid(), $mce->{wk_total_rows};
    }
 
    my $mce = MCE->new(
@@ -832,10 +832,10 @@ e.g. $chunk_ref = [ record1, record2, record3, ... ]
 
    sub user_func {
 
-      my ($self, $chunk_ref, $chunk_id) = @_;
+      my ($mce, $chunk_ref, $chunk_id) = @_;
 
       foreach my $row ( @{ $chunk_ref } ) {
-         $self->{wk_total_rows} += 1;
+         $mce->{wk_total_rows} += 1;
          print $row;
       }
    }
@@ -855,7 +855,7 @@ Here, a reference to a scalar containing the raw chunk data is processed.
 
    sub user_func {
 
-      my ($self, $chunk_ref, $chunk_id) = @_;
+      my ($mce, $chunk_ref, $chunk_id) = @_;
 
       my $count = () = $$chunk_ref =~ /abc/;
    }
@@ -887,7 +887,7 @@ Handy when wanting to filter, modify, and/or direct the output elsewhere.
    }
 
    sub user_func {
-      my ($self, $chunk_ref, $chunk_id) = @_;
+      my ($mce, $chunk_ref, $chunk_id) = @_;
       my $count = 0;
 
       foreach my $row ( @{ $chunk_ref } ) {
@@ -937,7 +937,7 @@ processing.
       input_data => $list_file,
 
       task_end   => sub {
-         my ($self, $task_id, $task_name) = @_;
+         my ($mce, $task_id, $task_name) = @_;
          print "Task [$task_id -- $task_name] completed processing\n";
       },
 
@@ -971,7 +971,7 @@ user_func for input_data and sequence of numbers. The following applies.
    $_ is a ref irregardless of whether chunk_size is 1 or greater
 
    user_func => sub {
-    # my ($self, $chunk_ref, $chunk_id) = @_;
+    # my ($mce, $chunk_ref, $chunk_id) = @_;
       print ${ $_ };    ## $_ is same as $chunk_ref
    }
 
@@ -981,7 +981,7 @@ user_func for input_data and sequence of numbers. The following applies.
    $_ is same as $chunk_ref or $_[CHUNK]
 
    user_func => sub {
-    # my ($self, $chunk_ref, $chunk_id) = @_;
+    # my ($mce, $chunk_ref, $chunk_id) = @_;
       for my $row ( @{ $_ } ) {
          print $row, "\n";
       }
@@ -990,7 +990,7 @@ user_func for input_data and sequence of numbers. The following applies.
    use MCE CONST => 1;
 
    user_func => sub {
-    # my ($self, $chunk_ref, $chunk_id) = @_;
+    # my ($mce, $chunk_ref, $chunk_id) = @_;
       for my $row ( @{ $_[CHUNK] } ) {
          print $row, "\n";
       }
@@ -1004,12 +1004,12 @@ user_func for input_data and sequence of numbers. The following applies.
    ## $chunk_ref is a reference to an array.
 
    user_func => sub {
-    # my ($self, $chunk_ref, $chunk_id) = @_;
+    # my ($mce, $chunk_ref, $chunk_id) = @_;
       print $_, "\n;    ## Same as $chunk_ref->[0];
    }
 
    MCE->foreach("/path/to/file", sub {
-    # my ($self, $chunk_ref, $chunk_id) = @_;
+    # my ($mce, $chunk_ref, $chunk_id) = @_;
       print $_;         ## Same as $chunk_ref->[0];
    });
 
@@ -1017,7 +1017,7 @@ user_func for input_data and sequence of numbers. The following applies.
    ## Both $_ and $n_seq are the same when chunk_size => 1.
 
    MCE->forseq([ 1, 9 ], sub {
-    # my ($self, $n_seq, $chunk_id) = @_;
+    # my ($mce, $n_seq, $chunk_id) = @_;
       print $_, "\n";   ## Same as $n_seq
    });
 
@@ -1031,7 +1031,7 @@ The code block receives an array containing the next 5 sequences. Chunk 1
 same as $_, due to chunk_size being greater than 1.
 
    MCE->forseq( [ 10, 40000, 2 ], { chunk_size => 5 }, sub {
-    # my ($self, $n_seq, $chunk_id) = @_;
+    # my ($mce, $n_seq, $chunk_id) = @_;
       my @result;
       for my $n ( @{ $_ } ) {
          ... do work, append to result for 5
@@ -1057,7 +1057,7 @@ available worker. In essence, the abort method writes the last offset
 position. Workers, on requesting the next offset position, will think
 the end of input_data has been reached and leave the chunking loop.
 
-   $self->abort();
+   $mce->abort();
    MCE->abort();
 
 =item ->chunk_id ( void )
@@ -1066,14 +1066,14 @@ Returns the chunk_id for the current chunk. The value starts at 1. Chunking
 applies to workers processing input_data or sequence. The value is set to 0
 for the manager process.
 
-   my $chunk_id = $self->chunk_id();
+   my $chunk_id = $mce->chunk_id();
    my $chunk_id = MCE->chunk_id();
 
 =item ->chunk_size ( void )
 
 Returns the chunk_size used by MCE.
 
-   my $chunk_size = $self->chunk_size();
+   my $chunk_size = $mce->chunk_size();
    my $chunk_size = MCE->chunk_size();
 
 =item ->freeze ( $object_ref )
@@ -1082,14 +1082,14 @@ Calls the internal freeze method to serialize an object. The default
 serialization routines are handled by Storable. Both freeze and thaw
 can be overridden when including MCE.
 
-   my $frozen = $self->freeze([ 0, 2, 4 ]);
+   my $frozen = $mce->freeze([ 0, 2, 4 ]);
    my $frozen = MCE->freeze([ 0, 2, 4 ]);
 
 =item ->max_workers ( void )
 
 Returns the value for max_workers used by MCE.
 
-   my $max_workers = $self->max_workers();
+   my $max_workers = $mce->max_workers();
    my $max_workers = MCE->max_workers();
 
 =item ->sess_dir ( void )
@@ -1097,14 +1097,14 @@ Returns the value for max_workers used by MCE.
 Returns the session directory used by the MCE instance. This is defined
 during spawning and removed during shutdown.
 
-   my $sess_dir = $self->sess_dir();
+   my $sess_dir = $mce->sess_dir();
    my $sess_dir = MCE->sess_dir();
 
 =item ->task_id ( void )
 
 Returns the task ID. This applies to the user_tasks option (starts at 0).
 
-   my $task_id = $self->task_id();
+   my $task_id = $mce->task_id();
    my $task_id = MCE->task_id();
 
 =item ->task_name ( void )
@@ -1112,7 +1112,7 @@ Returns the task ID. This applies to the user_tasks option (starts at 0).
 Returns the task_name value specified via the task_name option when
 configuring MCE.
 
-   my $task_name = $self->task_name();
+   my $task_name = $mce->task_name();
    my $task_name = MCE->task_name();
 
 =item ->task_wid ( void )
@@ -1121,28 +1121,28 @@ Returns the task worker ID (applies to user_tasks). The value starts at 1
 per each task configured within user_tasks. The value is set to 0 for the
 manager process.
 
-   my $task_wid = $self->task_wid();
+   my $task_wid = $mce->task_wid();
    my $task_wid = MCE->task_wid();
 
 =item ->thaw ( $frozen )
 
 Calls the internal thaw method to un-serialize the frozen object.
 
-   my $object_ref = $self->thaw($frozen);
+   my $object_ref = $mce->thaw($frozen);
    my $object_ref = MCE->thaw($frozen);
 
 =item ->tmp_dir ( void )
 
 Returns the temporary directory used by MCE.
 
-   my $tmp_dir = $self->tmp_dir();
+   my $tmp_dir = $mce->tmp_dir();
    my $tmp_dir = MCE->tmp_dir();
 
 =item ->user_args ( void )
 
 Returns the arguments specified via the user_args option.
 
-   my ($arg1, $arg2, $arg3) = $self->user_args();
+   my ($arg1, $arg2, $arg3) = $mce->user_args();
    my ($arg1, $arg2, $arg3) = MCE->user_args();
 
 =item ->wid ( void )
@@ -1150,7 +1150,7 @@ Returns the arguments specified via the user_args option.
 Returns the MCE worker ID. Starts at 1 per each MCE instance. The value is
 set to 0 for the manager process.
 
-   my $wid = $self->wid();
+   my $wid = $mce->wid();
    my $wid = MCE->wid();
 
 =back
@@ -1180,7 +1180,7 @@ process method.
    ## Arguments inside the code block are the same as for user_func.
 
    MCE->forchunk(\@input_data, sub {
-      my ($self, $chunk_ref, $chunk_id) = @_;
+      my ($mce, $chunk_ref, $chunk_id) = @_;
 
       foreach ( @{ $chunk_ref } ) {
          MCE->sendto("stdout", "$chunk_id: $_\n");
@@ -1205,7 +1205,7 @@ Arguments within the block are the same whether calling foreach or forchunk.
    );
 
    MCE->foreach(\@input_data, sub {
-      my ($self, $chunk_ref, $chunk_id) = @_;
+      my ($mce, $chunk_ref, $chunk_id) = @_;
       my $row = $chunk_ref->[0];
       MCE->sendto("stdout", "$chunk_id: $row\n");
    });
@@ -1226,7 +1226,7 @@ parallelize a serial loop with MCE.
    ## Parallel loop via MCE.
 
    MCE->foreach([ (0 .. $max - 1) ], sub {
-      my ($self, $chunk_ref, $chunk_id) = @_;
+      my ($mce, $chunk_ref, $chunk_id) = @_;
       my $i = $chunk_ref->[0];
       ...  ## Runs in parallel
    });
@@ -1240,12 +1240,12 @@ Sequence can be defined using a hash or an array reference.
    );
 
    MCE->forseq({ begin => 15, end => 10, step => -1 }, sub {
-      my ($self, $n, $chunk_id) = @_;
+      my ($mce, $n, $chunk_id) = @_;
       print $n, " from ", MCE->wid(), "\n";
    });
 
    MCE->forseq([ 20, 40 ], sub {
-      my ($self, $n, $chunk_id) = @_;
+      my ($mce, $n, $chunk_id) = @_;
       my $result = `ping 192.168.1.${n}`;
       ...
    });
@@ -1255,7 +1255,7 @@ sequences below. Chunking reduces IPC overhead behind the scene. Chunk size
 is 1 when not specified.
 
    MCE->forseq([ 20, 80 ], { chunk_size => 10 }, sub {
-      my ($self, $n_seq, $chunk_id) = @_;
+      my ($mce, $n_seq, $chunk_id) = @_;
       for my $n ( @{ $n_seq } ) {
          my $result = `ping 192.168.1.${n}`;
          ...
@@ -1325,23 +1325,26 @@ Below is shown with overriding the default for max_workers.
 
    MCE->shutdown();
 
-=item ->restart_worker ( $wid )
+=item ->restart_worker ( void )
 
 One can restart a worker who has died or exited. The job never ends below due
-to restarting each time. The same wid from the worker, which has exited, is
-used (recommended).
+to restarting each time. Recommended is to call $mce->exit() or MCE->exit()
+instead of the native exit() function for better handling, especially under
+the Windows environment.
+
+The $e->{wid} argument is no longer necessary starting with the 1.5 release.
 
    my $mce = MCE->new(
 
       on_post_exit => sub {
-         my ($self, $e) = @_;
+         my ($mce, $e) = @_;
          print "$e->{wid}: $e->{pid}: status $e->{status}: $e->{msg}";
-
-         MCE->restart_worker($e->{wid});
+       # MCE->restart_worker($e->{wid});  ## MCE-1.415 and below
+         MCE->restart_worker();           ## MCE-1.5 and above
       },
 
       user_begin => sub {
-         my $self = $_[0];
+         my ($mce, $task_id, $task_name) = @_;
          ## Not interested in die messages going to STDERR.
          ## The die handler calls MCE->exit(255, $_[0]).
          close STDERR;
@@ -1349,14 +1352,14 @@ used (recommended).
 
       user_tasks => [{
          max_workers => 5,
-         user_func   => sub {
-            my $self = $_[0]; sleep MCE->wid();
+         user_func => sub {
+            my $mce = $_[0]; sleep MCE->wid();
             MCE->exit(3, "exited from " . MCE->wid() . "\n");
          }
       },{
          max_workers => 4,
-         user_func   => sub {
-            my $self = $_[0]; sleep MCE->wid();
+         user_func => sub {
+            my $mce = $_[0]; sleep MCE->wid();
             die("died from " . MCE->wid() . "\n");
          }
       }]
@@ -1410,11 +1413,11 @@ process method.
 The send method is useful when wanting to spawn workers early to minimize
 memory consumption and afterwards send data individually to each worker. One
 cannot send more than the total workers spawned. Workers store the received
-data as $self->{user_data}.
+data as $mce->{user_data}.
 
 The data which can be sent is restricted to an ARRAY, HASH, or PDL reference.
 Workers begin processing immediately after receiving data. Workers set
-$self->{user_data} to undef after processing. One cannot specify input_data,
+$mce->{user_data} to undef after processing. One cannot specify input_data,
 sequence, or user_tasks for the MCE instance to receive user data via the
 "send" method.
 
@@ -1425,8 +1428,8 @@ immediately after receiving user data.
       max_workers => 5,
 
       user_func => sub {
-         my ($self) = @_;
-         my $data = $self->{user_data};
+         my ($mce) = @_;
+         my $data = $mce->{user_data};
          my $first_name = $data->{first_name};
          print MCE->wid, ": Hello from $first_name\n";
       }
@@ -1606,7 +1609,7 @@ foreach, forchunk, forseq, and user_func.
 
    MCE->forchunk(\@list, { chunk_size => 2 }, sub {
 
-      my ($self, $chunk_ref, $chunk_id) = @_;
+      my ($mce, $chunk_ref, $chunk_id) = @_;
       MCE->last if ($chunk_id > 4);
 
       my @output = ();
@@ -1638,7 +1641,7 @@ foreach, forchunk, forseq, and user_func.
 
    MCE->forchunk(\@list, { chunk_size => 4 }, sub {
 
-      my ($self, $chunk_ref, $chunk_id) = @_;
+      my ($mce, $chunk_ref, $chunk_id) = @_;
       MCE->next if ($chunk_id < 20);
 
       my @output = ();
@@ -1743,7 +1746,7 @@ Barrier synchronization (sync) was added to MCE 1.406.
 
    sub user_func {
 
-      my ($self) = @_;
+      my ($mce) = @_;
       my $wid = MCE->wid();
 
       MCE->sendto('stdout', "a: $wid\n");
@@ -1804,7 +1807,7 @@ or MCE->sendto methods inside a loop.
 
    sub user_func {
 
-      my ($self) = @_;
+      my ($mce) = @_;
       my @result;
 
       for (1 .. 3) {
@@ -1886,7 +1889,7 @@ The user_tasks is configured to simulate 4 nodes below. The demonstration uses
 
    sub user_begin {
 
-      my ($self) = @_;
+      my ($mce, $task_id, $task_name) = @_;
 
       ## The yield method causes this worker to wait for its next
       ## time interval slot before running. Yield has no effect
@@ -1911,7 +1914,7 @@ The user_tasks is configured to simulate 4 nodes below. The demonstration uses
 
       sub user_func {
 
-         my ($self, $seq_n, $chunk_id) = @_;
+         my ($mce, $seq_n, $chunk_id) = @_;
 
          ## Yield simply waits for the next time interval.
          MCE->yield;

@@ -5,7 +5,7 @@ MCE::Examples - A list of examples demonstrating Many-core Engine
 
 =head1 VERSION
 
-This document describes MCE::Examples version 1.511
+This document describes MCE::Examples version 1.513
 
 =head1 DESCRIPTION
 
@@ -68,6 +68,10 @@ count aggregation.
              PDL, PDL + MCE, as well as parallelizing Strassen's
              divide-and-conquer algorithm. Also included are 2 plain
              Perl examples.
+
+   pipe1.pl, pipe2.pl
+             Process STDIN or FILE in parallel. Processing is via Perl
+             for pipe1.pl, whereas an external command for pipe2.pl.
 
    scaling_pings.pl
              Perform ping test and report back failed IPs to standard

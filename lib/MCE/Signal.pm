@@ -12,7 +12,7 @@ use warnings;
 use Fcntl qw( :flock O_RDONLY );
 use base qw( Exporter );
 
-our $VERSION = '1.511'; $VERSION = eval $VERSION;
+our $VERSION = '1.513'; $VERSION = eval $VERSION;
 
 our ($has_threads, $main_proc_id, $prog_name);
 our ($display_die_with_localtime, $display_warn_with_localtime);
@@ -43,6 +43,7 @@ sub _croak { require Carp; goto &Carp::croak; }
 sub _usage { _croak "MCE::Signal error: $_[0] is not a valid option"; }
 sub _flag  { 1; }
 
+my $_is_MSWin32   = ($^O eq 'MSWin32');
 my $_keep_tmp_dir = 0;
 my $_no_sigmsg    = 0;
 my $_no_kill9     = 0;
@@ -81,12 +82,12 @@ sub import {
  # setpgrp(0,0) if ($_no_setpgrp == 0 && $^O ne 'MSWin32');
 
    ## Sets the current process group for the current process.
-   setpgrp(0,0) if ($_setpgrp == 1 && $^O ne 'MSWin32');
+   setpgrp($main_proc_id, 0) if ($_setpgrp == 1 && $^O ne 'MSWin32');
 
    my ($_tmp_dir_base, $_count);
 
    if (exists $ENV{TEMP}) {
-      if ($^O eq 'MSWin32') {
+      if ($_is_MSWin32) {
          $_tmp_dir_base = $ENV{TEMP} . '/mce';
          mkdir $_tmp_dir_base unless (-d $_tmp_dir_base);
       }
@@ -132,7 +133,7 @@ $SIG{TERM} = \&stop_and_exit;                          ## UNIX SIG 15
 ## the reaping of it's children, especially when running multiple MCEs
 ## simultaneously.
 ##
-$SIG{CHLD} = 'DEFAULT' if ($^O ne 'MSWin32');
+$SIG{CHLD} = 'DEFAULT' unless ($_is_MSWin32);
 
 ###############################################################################
 ## ----------------------------------------------------------------------------
@@ -167,15 +168,19 @@ END {
 sub sys_cmd {
 
    shift @_ if (defined $_[0] && $_[0] eq 'MCE::Signal');
-   _croak("MCE::Signal::sys_cmd: no arguments was specified") if (@_ == 0);
+   _croak("MCE::Signal::sys_cmd: no arguments were specified") if (@_ == 0);
 
    my $_status = system(@_);
    my $_sig_no = $_status & 127;
    my $_exit_status = $_status >> 8;
 
-   ## Kill this process if command caught SIGINT or SIGQUIT.
-   kill('INT',  $$) if $_sig_no == 2;
-   kill('QUIT', $$) if $_sig_no == 3;
+   ## Kill the process group if command caught SIGINT or SIGQUIT.
+
+   kill('INT',  $main_proc_id, ($_is_MSWin32 ? -$$ : -getpgrp()))
+      if $_sig_no == 2;
+
+   kill('QUIT', $main_proc_id, ($_is_MSWin32 ? -$$ : -getpgrp()))
+      if $_sig_no == 3;
 
    return $_exit_status;
 }
@@ -218,12 +223,10 @@ sub sys_cmd {
 
       ## ----------------------------------------------------------------------
 
-      ## For main thread / parent process.
+      ## For the main thread / manager process.
       if ($$ == $main_proc_id) {
 
-         $_handler_cnt += 1;
-
-         if ($_handler_cnt == 1 && ! -e "$tmp_dir/stopped") {
+         if (++$_handler_cnt == 1 && ! -e "$tmp_dir/stopped") {
             open my $_FH, "> $tmp_dir/stopped"; close $_FH;
 
             local $\ = undef;
@@ -255,11 +258,13 @@ sub sys_cmd {
                open my $_FH, "> $tmp_dir/killed"; close $_FH;
 
                ## Signal process group to terminate.
-               kill('TERM', -$$);
+               kill('TERM', $_is_MSWin32 ? -$$ : -getpgrp());
 
                ## Pause a bit.
                if ($_sig_name ne 'PIPE') {
                   select(undef, undef, undef, 0.066) for (1..3);
+               } else {
+                  select(undef, undef, undef, 0.011) for (1..2);
                }
             }
 
@@ -287,10 +292,9 @@ sub sys_cmd {
 
             ## Signal process group to die.
             if ($_is_sig == 1) {
-               print STDERR "\n"
-                  if ($_sig_name ne 'PIPE' && $_no_sigmsg == 0);
+               print STDERR "\n" if ($_sig_name ne 'PIPE' && $_no_sigmsg == 0);
 
-               kill('KILL', -$$, $main_proc_id)
+               kill('KILL', ($_is_MSWin32 ? -$$ : -getpgrp()), $main_proc_id)
                   if ($_sig_name eq 'PIPE' || $_no_kill9 == 0);
             }
          }
@@ -301,30 +305,32 @@ sub sys_cmd {
       ## For child processes.
       if ($$ != $main_proc_id && $_is_sig == 1 && -d $tmp_dir) {
 
-         ## Obtain lock.
-         open my $CHILD_LOCK, '+>>', "$tmp_dir/child.lock";
-         flock $CHILD_LOCK, LOCK_EX;
-
-         $_handler_cnt += 1;
-
          ## Signal process group to terminate.
-         if ($_handler_cnt == 1) {
+         if (++$_handler_cnt == 1) {
+
+            ## Obtain lock.
+            open my $CHILD_LOCK, '+>>', "$tmp_dir/child.lock";
+            flock $CHILD_LOCK, LOCK_EX;
 
             ## Notify the main process that I've died.
             if ($_sig_name eq '__DIE__' && ! -f "$tmp_dir/died") {
-               open my $_FH, "> $tmp_dir/died"; close $_FH;
+               local $@; eval '
+                  open my $_FH, "> $tmp_dir/died"; close $_FH;
+               ';
             }
 
             ## Signal process group to terminate.
             if (! -f "$tmp_dir/killed" && ! -f "$tmp_dir/stopped") {
-               open my $_FH, "> $tmp_dir/killed"; close $_FH;
-               kill('TERM', -$$, $main_proc_id);
+               local $@; eval '
+                  open my $_FH, "> $tmp_dir/killed"; close $_FH;
+               ';
+               kill('TERM', $main_proc_id, -$$);
             }
-         }
 
-         ## Release lock.
-         flock $CHILD_LOCK, LOCK_UN;
-         close $CHILD_LOCK;
+            ## Release lock.
+            flock $CHILD_LOCK, LOCK_UN;
+            close $CHILD_LOCK;
+         }
       }
 
       ## ----------------------------------------------------------------------
@@ -440,7 +446,7 @@ MCE::Signal - Temporary directory creation/cleanup & signal handling
 
 =head1 VERSION
 
-This document describes MCE::Signal version 1.511
+This document describes MCE::Signal version 1.513
 
 =head1 SYNOPSIS
 
@@ -466,9 +472,10 @@ Windows.
 As of MCE 1.405, MCE::Signal no longer calls setpgrp by default. Pass the
 -setpgrp option to MCE::Signal to call setpgrp.
 
- ## Running MCE through Daemon::Control requires setpgrp to be called.
+ ## Running MCE through Daemon::Control requires setpgrp to be called
+ ## for MCE releases 1.511 and below.
 
- use MCE::Signal qw(-setpgrp);
+ use MCE::Signal qw(-setpgrp);   ## Not necessary for MCE 1.512 and above
  use MCE;
 
 The following are available arguments and their meanings.
@@ -483,11 +490,13 @@ The following are available arguments and their meanings.
 
  -setpgrp          - Calls setpgrp to set the process group for the process
 
-                     Specify this option to ensure all workers terminate
-                     when reading STDIN like so:
+                     This option ensures all workers terminate when reading
+                     STDIN for MCE releases 1.511 and below.
+
                         cat big_input_file | ./mce_script.pl | head -10
 
                      This works fine without the -setpgrp option:
+
                         ./mce_script.pl < big_input_file | head -10
 
 Nothing is exported by default. Exportable are 1 variable and 2 subroutines.
@@ -507,10 +516,17 @@ Nothing is exported by default. Exportable are 1 variable and 2 subroutines.
 
 =head2 sys_cmd ( $command )
 
- ## Execute command and return the actual exit status. The calling
- ## process is also signaled if command caught SIGINT or SIGQUIT.
+The system function in Perl ignores SIGNINT and SIGQUIT. These 2 signals are
+sent to the command being executed via system() but not back to the underlying
+Perl script. For this reason, sys_cmd was added to MCE::Signal.
 
- my $exit_status = MCE::Signal::sys_cmd($command);
+ ## Execute command and return the actual exit status. The perl script
+ ## is also signaled if command caught SIGINT or SIGQUIT.
+
+ use MCE::Signal qw(sys_cmd);   ## Include before MCE
+ use MCE;
+
+ my $exit_status = sys_cmd($command);
 
 =head1 EXAMPLES
 

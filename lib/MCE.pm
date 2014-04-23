@@ -18,7 +18,7 @@ use Time::HiRes qw( time );
 use MCE::Signal;
 use bytes;
 
-our $VERSION = '1.511'; $VERSION = eval $VERSION;
+our $VERSION = '1.513'; $VERSION = eval $VERSION;
 
 our (%_valid_fields_new, %_params_allowed_args, %_valid_fields_task);
 our ($_is_cygwin, $_is_MSWin32, $_is_WinEnv);
@@ -848,7 +848,7 @@ sub restart_worker {
       _dispatch_child($self, $_wid, $_task, $_task_id, $_task_wid, $_params);
    }
 
-   select(undef, undef, undef, 0.002);
+   select(undef, undef, undef, 0.001);
 
    return;
 }
@@ -1313,10 +1313,11 @@ sub shutdown {
 
    ## Remove the session directory.
    if (defined $_sess_dir) {
-      unlink "$_sess_dir/_dat.lock.1";
+      unlink "$_sess_dir/_dat.lock.e"
+         if (-e "$_sess_dir/_dat.lock.e");
 
       if ($_lock_chn) {
-         unlink "$_sess_dir/_dat.lock.$_" for (2 .. $_data_channels);
+         unlink "$_sess_dir/_dat.lock.$_" for (1 .. $_data_channels);
       }
       unlink "$_sess_dir/_com.lock";
       rmdir  "$_sess_dir";
@@ -1479,25 +1480,21 @@ sub exit {
    my $_task_id    = $self->{_task_id};
    my $_sess_dir   = $self->{_sess_dir};
 
-   if (!$_lock_chn || $_chn != 1) {
-      if (defined $_DAT_LOCK) {
-         close $_DAT_LOCK; undef $_DAT_LOCK;
-         select(undef, undef, undef, 0.002);
-      }
-      open $_DAT_LOCK, '+>>:raw:stdio', "$_sess_dir/_dat.lock.1"
-         or die "(W) open error $_sess_dir/_dat.lock.1: $!\n";
-   }
-
    unless ($self->{_exiting}) {
       $self->{_exiting} = 1;
 
+      local $\ = undef if (defined $\);
       my $_len = length $_exit_msg;
-      local $\ = undef;
 
       $_exit_id =~ s/[\r\n][\r\n]*/ /mg;
 
-      flock $_DAT_LOCK, LOCK_EX;
-      select(undef, undef, undef, 0.02) if ($_is_cygwin);
+      open my $_DAE_LOCK, '+>>:raw:stdio', "$_sess_dir/_dat.lock.e"
+         or die "(W) open error $_sess_dir/_dat.lock.e: $!\n";
+
+      flock $_DAE_LOCK, LOCK_EX;
+      select(undef, undef, undef, 0.05) if ($_is_WinEnv);
+
+      flock $_DAT_LOCK, LOCK_EX if ($_lock_chn);
 
       print $_DAT_W_SOCK OUTPUT_W_EXT . $LF . $_chn . $LF;
       print $_DAU_W_SOCK
@@ -1505,13 +1502,19 @@ sub exit {
          $_exit_status . $LF . $_exit_id . $LF . $_len . $LF . $_exit_msg
       ;
 
-      flock $_DAT_LOCK, LOCK_UN;
+      flock $_DAT_LOCK, LOCK_UN if ($_lock_chn);
+      flock $_DAE_LOCK, LOCK_UN;
+
+      close $_DAE_LOCK; undef $_DAE_LOCK;
    }
 
    ## Exit thread/child process.
    $SIG{__DIE__} = $SIG{__WARN__} = sub { };
 
-   close $_DAT_LOCK; undef $_DAT_LOCK;
+   if ($_lock_chn) {
+      close $_DAT_LOCK; undef $_DAT_LOCK;
+   }
+
    close $_COM_LOCK; undef $_COM_LOCK;
 
    select STDERR; $| = 1;
