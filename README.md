@@ -31,6 +31,8 @@ were changed from 256 to 128 as well.
              mce-sort2 : 189 buckets (double)
              mce-sort3 : 283 buckets (triple, will not run if ulimit -n is low)
 
+             Each bucket requires a file handle during the pre-sorting stage.
+
   _Inline/   The Perl Inline module creates this directory. Any changes made
              to the embedded C code will cause a small delay when running the
              first time. This is due to Inline compiling C and caching to
