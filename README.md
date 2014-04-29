@@ -25,7 +25,11 @@ were changed from 256 to 128 as well.
 ## Directory content
 
 ```
-  bin/       mce-sort, bs-mkqs, mr-merge, ng-cradix, tb-radix, tr-radix
+  bin/       bs-mkqs, mr-merge, ng-cradix, tb-radix, tr-radix
+
+             mce-sort  :  95 buckets
+             mce-sort2 : 189 buckets (double)
+             mce-sort3 : 283 buckets (triple, will not run if ulimit -n is low)
 
   _Inline/   The Perl Inline module creates this directory. Any changes made
              to the embedded C code will cause a small delay when running the
