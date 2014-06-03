@@ -22,11 +22,6 @@ BEGIN {
 
    unshift @INC, "$base_dir/lib";
 
-   $ENV{PATH} = $prog_dir .($^O eq 'MSWin32' ? ';' : ':'). $ENV{PATH};
-   $ENV{PERL_INLINE_DIRECTORY} = "$base_dir/_Inline";
-
-   mkdir "$base_dir/_Inline" unless -d "$base_dir/_Inline";
-
    if (-r '/proc/cpuinfo') {
       my $proc_id;
 
@@ -158,6 +153,11 @@ exit 0 if (-s $file == 0);
 ## C functions for partitioning.
 ##
 ###############################################################################
+
+BEGIN {
+   $ENV{PERL_INLINE_DIRECTORY} = "${base_dir}/.Inline";
+   mkdir "${base_dir}/.Inline" unless -d "${base_dir}/.Inline";
+}
 
 use Inline 'C' => Config => CCFLAGS => '-std=c99 -O2 -march=native';
 use Inline 'C' => <<'END_C';
@@ -408,6 +408,7 @@ foreach my $bucket (32 .. 126) {
 
 MCE->new(
    user_begin => \&user_begin, user_end => \&user_end,
+   use_threads => 0,
 
    user_tasks => [{
       max_workers => $max_workers, task_name => 'main',

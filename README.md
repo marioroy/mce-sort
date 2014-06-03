@@ -25,18 +25,17 @@ were changed from 256 to 128 as well.
 ## Directory content
 
 ```
-  bin/       bs-mkqs, mr-merge, ng-cradix, tb-radix, tr-radix
-
-             mce-sort  :  95 buckets
-             mce-sort2 : 189 buckets (double)
-             mce-sort3 : 283 buckets (triple, will not run if ulimit -n is low)
-
-             Each bucket requires a file handle during the pre-sorting stage.
-
-  _Inline/   The Perl Inline module creates this directory. Any changes made
+  .Inline/   The Perl Inline module creates this directory. Any changes made
              to the embedded C code will cause a small delay when running the
              first time. This is due to Inline compiling C and caching to
              this directory.
+
+  bin/       bs-mkqs, mr-merge, ng-cradix, tb-radix, tr-radix
+
+             mce-sort1 :  95 buckets
+             mce-sort2 : 189 buckets (double)
+
+             Each bucket requires a file handle during the pre-sorting stage.
 
   lib/       Perl modules MCE, Inline, Parse::RecDescent (needed by Inline), 
              and CpuAffinity.
@@ -60,25 +59,26 @@ not necessary to install.
 Compile the sources.
 
 ```
-  cd src; make distclean; make; cd ../bin
+  cd src; make clean; make; cd ../bin
 ```
 
 Running.
 
 ```
   $ ./bs-mkqs [-r] FILE > sorted               ## Compute using 1 core
-  $ ./mce-sort -e bs-mkqs [-r] FILE > sorted   ## Compute using many cores
 
-  $ ./mce-sort
+  $ ./mce-sort1 -e bs-mkqs [-r] FILE > sorted  ## Compute using many cores
+
+  $ ./mce-sort1
 
   NAME
-     mce-sort -- wrapper script for parallelizing sort binaries
+     mce-sort1 -- wrapper script for parallelizing sort binaries
 
   SYNOPSIS
-     mce-sort [options] -e SORTEXE [-r] FILE
+     mce-sort1 [options] -e SORTEXE [-r] FILE
 
   DESCRIPTION
-     The mce-sort script utilizes MCE to sort FILE in parallel.
+     The mce-sort1 script utilizes MCE to sort FILE in parallel.
      The partition logic is suited for string sorting as of this time.
 
      The following options are available:
@@ -94,8 +94,8 @@ Running.
      -r                 Reverse output order
 
   EXAMPLES
-     mce-sort --numworkers=8 --bm --check --no-output -e tr_radix ascii.4gb
-     mce-sort --numworkers=4 -e tr_radix ascii.4gb > sorted.4gb
+     mce-sort1 --numworkers=8 --bm --check --no-output -e tr_radix ascii.4gb
+     mce-sort1 --numworkers=4 -e tr_radix ascii.4gb > sorted.4gb
 ```
 
 ## Description of sequential algorithms
@@ -186,7 +186,7 @@ The system is a dual Intel Xeon E5-2660 (v1), 1600 MHz 128GB, running
 Fedora 20 x86_64. The box has 16 real cores (32 logical PEs).
 
 Running with 1 core takes 405.848 seconds to sort the pointer array.
-Interestingly enough is that it takes 357.870 seconds with mce-sort.
+Interestingly enough is that it takes 357.870 seconds with mce-sort1.
 The pre-sorting stage creates up to 95 partitions which are sorted
 individually afterwards.
 
@@ -201,7 +201,7 @@ individually afterwards.
   FREE:    1.167123      free memory
   PASS:    1             check succeeded, used by MCE
 
-  $ ./mce-sort --max-workers=1 --bm --check --no-output \
+  $ ./mce-sort1 --max-workers=1 --bm --check --no-output \
        -e tr-radix /dev/shm/random.ascii.32gb 
 
   pre-sort         :  131.124s
@@ -213,25 +213,25 @@ individually afterwards.
 ```
 
 Compare 405.848 seconds (1 core) with 27.462 seconds (16 cores) for
-mce-sort -e tr-radix. That is quite good considering the later also
+mce-sort1 -e tr-radix. That is quite good considering the later also
 includes the pre-sorting time.
 
 ```
-   PEs                            2        4        8       16       32
-  ======================================================================
-   mce-sort -e bs-mkqs   |  399.223  180.555   99.660   59.073   52.556
-   mce-sort -e mr-merge  |  659.007  311.366  175.254  106.111   90.435
-   mce-sort -e ng-cradix |  331.811  150.988   80.833   44.574   34.342
-   mce-sort -e tb-radix  |  199.510   98.444   53.737   31.283   25.582
-   mce-sort -e tr-radix  |  172.677   85.836   47.256   27.462   22.286
-  ======================================================================
+   PEs                             2        4        8       16       32
+  =======================================================================
+   mce-sort1 -e bs-mkqs   |  399.223  180.555   99.660   59.073   52.556
+   mce-sort1 -e mr-merge  |  659.007  311.366  175.254  106.111   90.435
+   mce-sort1 -e ng-cradix |  331.811  150.988   80.833   44.574   34.342
+   mce-sort1 -e tb-radix  |  199.510   98.444   53.737   31.283   25.582
+   mce-sort1 -e tr-radix  |  172.677   85.836   47.256   27.462   22.286
+  =======================================================================
   Random, n = 3.27 billion strings, N = 32 Gi File
 ```
 
 ## Output from -e tr-radix, 32 logical PEs
 
 ```
-  $ ./mce-sort --max-workers=32 --bm --check --no-output \
+  $ ./mce-sort1 --max-workers=32 --bm --check --no-output \
        --parallel-io -e tr-radix /dev/shm/random.ascii.32gb 
 
   Stage A   started         :  1398207596.304
@@ -252,17 +252,17 @@ includes the pre-sorting time.
 
   Absolute run time (partition and sort ptr arrays)
 
-  mce-sort -e bs-mkqs       :  7.159 + 45.397   =  52.556s
-  mce-sort -e mr-merge      :  7.148 + 83.287   =  90.435s
-  mce-sort -e ng-cradix     :  7.139 + 27.203   =  34.342s
-  mce-sort -e tb-radix      :  7.084 + 18.498   =  25.582s
-  mce-sort -e tr-radix      :  7.044 + 15.242   =  22.286s
+  mce-sort1 -e bs-mkqs      :  7.159 + 45.397   =  52.556s
+  mce-sort1 -e mr-merge     :  7.148 + 83.287   =  90.435s
+  mce-sort1 -e ng-cradix    :  7.139 + 27.203   =  34.342s
+  mce-sort1 -e tb-radix     :  7.084 + 18.498   =  25.582s
+  mce-sort1 -e tr-radix     :  7.044 + 15.242   =  22.286s
 ```
 
 ## Output from -e tr-radix, 16 cores
 
 ```
-  $ ./mce-sort --max-workers=16 --bm --check --no-output \
+  $ ./mce-sort1 --max-workers=16 --bm --check --no-output \
        --parallel-io -e tr-radix /dev/shm/random.ascii.32gb 
 
   Stage A   started         :  1398210591.483
@@ -283,17 +283,17 @@ includes the pre-sorting time.
 
   Absolute run time (partition and sort ptr arrays)
 
-  mce-sort -e bs-mkqs       :  9.275 + 49.798   =  59.073s
-  mce-sort -e mr-merge      :  9.235 + 96.876   = 106.111s
-  mce-sort -e ng-cradix     :  9.367 + 35.207   =  44.574s
-  mce-sort -e tb-radix      :  9.289 + 21.994   =  31.283s
-  mce-sort -e tr-radix      :  9.306 + 18.156   =  27.462s
+  mce-sort1 -e bs-mkqs      :  9.275 + 49.798   =  59.073s
+  mce-sort1 -e mr-merge     :  9.235 + 96.876   = 106.111s
+  mce-sort1 -e ng-cradix    :  9.367 + 35.207   =  44.574s
+  mce-sort1 -e tb-radix     :  9.289 + 21.994   =  31.283s
+  mce-sort1 -e tr-radix     :  9.306 + 18.156   =  27.462s
 ```
 
 ## Output from -e tr-radix, 8 cores
 
 ```
-  $ ./mce-sort --max-workers=8 --bm --check --no-output \
+  $ ./mce-sort1 --max-workers=8 --bm --check --no-output \
        --parallel-io -e tr-radix /dev/shm/random.ascii.32gb 
 
   Stage A   started         :  1398211434.990
@@ -314,17 +314,17 @@ includes the pre-sorting time.
 
   Absolute run time (partition and sort ptr arrays)
 
-  mce-sort -e bs-mkqs       : 16.152 +  83.508  =  99.660s
-  mce-sort -e mr-merge      : 16.324 + 158.930  = 175.254s
-  mce-sort -e ng-cradix     : 16.480 +  64.353  =  80.833s
-  mce-sort -e tb-radix      : 16.256 +  37.481  =  53.737s
-  mce-sort -e tr-radix      : 16.141 +  31.115  =  47.256s
+  mce-sort1 -e bs-mkqs      : 16.152 +  83.508  =  99.660s
+  mce-sort1 -e mr-merge     : 16.324 + 158.930  = 175.254s
+  mce-sort1 -e ng-cradix    : 16.480 +  64.353  =  80.833s
+  mce-sort1 -e tb-radix     : 16.256 +  37.481  =  53.737s
+  mce-sort1 -e tr-radix     : 16.141 +  31.115  =  47.256s
 ```
 
 ## Output from -e tr-radix, 4 cores
 
 ```
-  $ ./mce-sort --max-workers=4 --bm --check --no-output \
+  $ ./mce-sort1 --max-workers=4 --bm --check --no-output \
        --parallel-io -e tr-radix /dev/shm/random.ascii.32gb 
 
   Stage A   started         :  1398212323.491
@@ -345,17 +345,17 @@ includes the pre-sorting time.
 
   Absolute run time (partition and sort ptr arrays)
 
-  mce-sort -e bs-mkqs       : 29.797 + 150.758  = 180.555s
-  mce-sort -e mr-merge      : 29.599 + 281.767  = 311.366s
-  mce-sort -e ng-cradix     : 30.003 + 120.985  = 150.988s
-  mce-sort -e tb-radix      : 29.989 +  68.455  =  98.444s
-  mce-sort -e tr-radix      : 29.816 +  56.020  =  85.836s
+  mce-sort1 -e bs-mkqs      : 29.797 + 150.758  = 180.555s
+  mce-sort1 -e mr-merge     : 29.599 + 281.767  = 311.366s
+  mce-sort1 -e ng-cradix    : 30.003 + 120.985  = 150.988s
+  mce-sort1 -e tb-radix     : 29.989 +  68.455  =  98.444s
+  mce-sort1 -e tr-radix     : 29.816 +  56.020  =  85.836s
 ```
 
 ## Output from -e tr-radix, 2 cores
 
 ```
-  $ ./mce-sort --max-workers=2 --bm --check --no-output \
+  $ ./mce-sort1 --max-workers=2 --bm --check --no-output \
        --parallel-io -e tr-radix /dev/shm/random.ascii.32gb 
 
   Stage A   started         :  1398260292.321
@@ -376,14 +376,14 @@ includes the pre-sorting time.
 
   Absolute run time (partition and sort ptr arrays)
 
-  mce-sort -e bs-mkqs       : 63.247 + 335.976  = 399.223s
-  mce-sort -e mr-merge      : 63.181 + 595.826  = 659.007s
-  mce-sort -e ng-cradix     : 63.172 + 268.639  = 331.811s
-  mce-sort -e tb-radix      : 62.960 + 136.550  = 199.510s
-  mce-sort -e tr-radix      : 62.753 + 109.924  = 172.677s
+  mce-sort1 -e bs-mkqs      : 63.247 + 335.976  = 399.223s
+  mce-sort1 -e mr-merge     : 63.181 + 595.826  = 659.007s
+  mce-sort1 -e ng-cradix    : 63.172 + 268.639  = 331.811s
+  mce-sort1 -e tb-radix     : 62.960 + 136.550  = 199.510s
+  mce-sort1 -e tr-radix     : 62.753 + 109.924  = 172.677s
 ```
 
 Thank you to the folks whom have contributed fast sorting algorithms to
-the world. Fast sequential algorithms can be parallelized with mce-sort
+the world. Fast sequential algorithms can be parallelized with mce-sort1
 (string sorting currently).
 
