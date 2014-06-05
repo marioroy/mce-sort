@@ -12,7 +12,7 @@ use warnings;
 use base qw( Exporter );
 use bytes;
 
-our $VERSION = '1.513'; $VERSION = eval $VERSION;
+our $VERSION = '1.514'; $VERSION = eval $VERSION;
 
 our @EXPORT_OK = qw( get_ncpu );
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
@@ -57,8 +57,13 @@ sub get_ncpu {
       };
 
       /aix/i && do {
-         my @output = `lsdev -C -c processor -S Available 2>/dev/null`;
-         $ncpu = scalar @output if @output;
+         my @output = `pmcycles -m 2>/dev/null`;
+         if (@output) {
+            $ncpu = scalar @output;
+         } else {
+            @output = `lsdev -Cc processor -S Available 2>/dev/null`;
+            $ncpu = scalar @output if @output;
+         }
          last OS_CHECK;
       };
 
@@ -228,7 +233,7 @@ MCE::Util - Public and private utility functions for Many-core Engine
 
 =head1 VERSION
 
-This document describes MCE::Util version 1.513
+This document describes MCE::Util version 1.514
 
 =head1 SYNOPSIS
 

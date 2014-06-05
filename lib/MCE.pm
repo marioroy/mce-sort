@@ -9,16 +9,27 @@ package MCE;
 use strict;
 use warnings;
 
+BEGIN {
+   ## Forking is emulated under the Windows enviornment (excluding Cygwin).
+   ## MCE 1.514+ will load the threads modules by default for Windows only.
+   ## Folks may specify use_threads => 0 if threads are not desired.
+   if ($^O eq 'MSWin32' && not defined $threads::VERSION) {
+      local $@; local $SIG{__DIE__} = \&_NOOP;
+      eval 'use threads';
+   }
+}
+
 use Fcntl qw( :flock O_RDONLY );
 use Socket qw( :crlf PF_UNIX PF_UNSPEC SOCK_STREAM );
 use Symbol qw( qualify_to_ref );
 use Storable qw( );
 
+use Scalar::Util qw( looks_like_number );
 use Time::HiRes qw( time );
 use MCE::Signal;
 use bytes;
 
-our $VERSION = '1.513'; $VERSION = eval $VERSION;
+our $VERSION = '1.514'; $VERSION = eval $VERSION;
 
 our (%_valid_fields_new, %_params_allowed_args, %_valid_fields_task);
 our ($_is_cygwin, $_is_MSWin32, $_is_WinEnv);
@@ -163,9 +174,9 @@ sub import {
       _croak("MCE::import: '$_arg' is not a valid module argument");
    }
 
-   ## This module does not load the threads module. Please include your
-   ## threading library of choice prir to including MCE library. This is
-   ## only a requirement if you're wanting to use threads versus forking.
+   ## Please include your threading library of choice prior to including
+   ## the MCE library. This is only a requirement if wanting to use threads
+   ## versus forking.
 
    unless (defined $_has_threads) {
       if (defined $threads::VERSION) {
@@ -342,7 +353,7 @@ sub new {
       return $MCE = $self;
    }
 
-   if (exists $argv{use_threads}) {
+   if (exists $argv{use_threads} and defined $argv{use_threads}) {
       $self->{use_threads} = $argv{use_threads};
 
       if (!$_has_threads && $argv{use_threads} ne '0') {
@@ -1523,8 +1534,7 @@ sub exit {
    threads->exit($_exit_status)
       if ($_has_threads && threads->can('exit'));
 
-   kill 9, $$ unless ($_is_WinEnv);
-
+   CORE::kill(9, $$) unless $MCE::_is_WinEnv;
    CORE::exit($_exit_status);
 }
 
@@ -1979,8 +1989,8 @@ sub _dispatch_child {
 
    unless ($_pid) {
       _worker_wrap($self, $_wid, $_task, $_task_id, $_task_wid, $_params);
-      kill 9, $$ unless ($MCE::_is_WinEnv);
-      CORE::exit();
+      CORE::kill(9, $$) unless $MCE::_is_WinEnv;
+      CORE::exit(0);
    }
 
    if (defined $_pid) {

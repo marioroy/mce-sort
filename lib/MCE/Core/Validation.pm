@@ -11,7 +11,7 @@
 
 package MCE::Core::Validation;
 
-our $VERSION = '1.513'; $VERSION = eval $VERSION;
+our $VERSION = '1.514'; $VERSION = eval $VERSION;
 
 ## Items below are folded into MCE.
 
@@ -48,12 +48,16 @@ sub _validate_args {
       if ($_s->{use_slurpio} && $_s->{use_slurpio} !~ /\A[01]\z/);
    _croak("$_tag: 'parallel_io' is not 0 or 1")
       if ($_s->{parallel_io} && $_s->{parallel_io} !~ /\A[01]\z/);
+
    _croak("$_tag: 'job_delay' is not valid")
-      if ($_s->{job_delay} && $_s->{job_delay} !~ /\A[\d\.]+\z/);
+      if ($_s->{job_delay} && (!looks_like_number($_s->{job_delay}) ||
+         $_s->{job_delay} < 0));
    _croak("$_tag: 'spawn_delay' is not valid")
-      if ($_s->{spawn_delay} && $_s->{spawn_delay} !~ /\A[\d\.]+\z/);
+      if ($_s->{spawn_delay} && (!looks_like_number($_s->{spawn_delay}) ||
+         $_s->{spawn_delay} < 0));
    _croak("$_tag: 'submit_delay' is not valid")
-      if ($_s->{submit_delay} && $_s->{submit_delay} !~ /\A[\d\.]+\z/);
+      if ($_s->{submit_delay} && (!looks_like_number($_s->{submit_delay}) ||
+         $_s->{submit_delay} < 0));
 
    _croak("$_tag: 'freeze' is not a CODE reference")
       if ($_s->{freeze} && ref $_s->{freeze} ne 'CODE');
@@ -165,9 +169,7 @@ sub _validate_args_s {
 
       for (qw(begin end step)) {
          _croak("$_tag: '$_' is not valid for sequence")
-            if (defined $_seq->{$_} && (
-               $_seq->{$_} eq '' || $_seq->{$_} !~ /\A-?\d*\.?\d*\z/
-            ));
+            if (defined $_seq->{$_} && !looks_like_number($_seq->{$_}));
       }
 
       unless (defined $_seq->{step}) {
@@ -194,13 +196,14 @@ sub _validate_args_s {
          if (ref $_i ne 'HASH');
       _croak("$_tag: 'delay' is not defined for interval")
          unless (defined $_i->{delay});
+      _croak("$_tag: 'delay' is not valid for interval")
+         if (!looks_like_number($_i->{delay}) || $_i->{delay} < 0);
 
-      for (qw(delay max_nodes node_id)) {
+      for (qw(max_nodes node_id)) {
          _croak("$_tag: '$_' is not valid for interval")
             if (defined $_i->{$_} && (
-               $_i->{$_} eq '' ||
-               $_i->{$_} !~ /\A\-?\d*(?:e\-|\.)?\d*\z/ ||
-               $_i->{$_} == 0 || $_i->{$_} < 0
+               !looks_like_number($_i->{$_}) || int($_i->{$_}) != $_i->{$_} ||
+               $_i->{$_} < 1
             ));
       }
       $_i->{max_nodes} = 1 unless (exists $_i->{max_nodes});

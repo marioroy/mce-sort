@@ -16,7 +16,7 @@ use MCE::Util;
 
 use MCE::Queue;
 
-our $VERSION = '1.513'; $VERSION = eval $VERSION;
+our $VERSION = '1.514'; $VERSION = eval $VERSION;
 
 ###############################################################################
 ## ----------------------------------------------------------------------------
@@ -515,7 +515,7 @@ MCE::Step - Parallel step model for building creative steps
 
 =head1 VERSION
 
-This document describes MCE::Step version 1.513
+This document describes MCE::Step version 1.514
 
 =head1 DESCRIPTION
 
@@ -612,7 +612,7 @@ receive the $mce instance as the very first argument.
 
 The tasks below run in parallel, and each with multiple workers as well.
 One may copy this code snippet and add MCE->task_wid or MCE->wid to the
-output. Remember that max_workers can take an anonymous array for specifing
+output. Remember that max_workers can take an anonymous array for specifying
 max_workers individually per each task block, similarly to task_name in the
 previous section.
 
