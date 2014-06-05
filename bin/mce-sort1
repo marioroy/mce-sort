@@ -22,6 +22,8 @@ BEGIN {
 
    unshift @INC, "$base_dir/lib";
 
+   $ENV{PATH} = $prog_dir .($^O eq 'MSWin32' ? ';' : ':'). $ENV{PATH};
+
    if (-r '/proc/cpuinfo') {
       my $proc_id;
 
@@ -152,6 +154,11 @@ exit 0 if (-s $file == 0);
 ## ----------------------------------------------------------------------------
 ## C functions for partitioning.
 ##
+## Specifying -std=c99 fails under the Windows environment due to several
+## header files not c99 compliant. The -march=native option is not supported
+## by the MinGW compiler. Update ExtUtils::MakeMaker if compiling fails
+## under Cygwin. Specify CCFLAGSEX, not CCFLAGS.
+##
 ###############################################################################
 
 BEGIN {
@@ -159,7 +166,7 @@ BEGIN {
    mkdir "${base_dir}/.Inline" unless -d "${base_dir}/.Inline";
 }
 
-use Inline 'C' => Config => CCFLAGS => '-std=c99 -O2 -march=native';
+use Inline 'C' => Config => CCFLAGSEX => '-O2';
 use Inline 'C' => <<'END_C';
 
    #include <stdlib.h>
