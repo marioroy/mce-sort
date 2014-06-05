@@ -83,8 +83,8 @@ Running.
 
      The following options are available:
 
-     --max-workers=NUM  Specify the number of workers for MCE (default auto)
-     --parallel-io      Enable parallel IO for stage A partitioning of data
+     --maxworkers=<val> Specify the number of workers for MCE (default auto)
+     --parallelio       Enable parallel IO for stage A partitioning of data
 
      --bm               Display benchmark info
      --check            Check array after sorted
@@ -94,8 +94,8 @@ Running.
      -r                 Reverse output order
 
   EXAMPLES
-     mce-sort1 --numworkers=8 --bm --check --no-output -e tr_radix ascii.4gb
-     mce-sort1 --numworkers=4 -e tr_radix ascii.4gb > sorted.4gb
+     mce-sort1 --maxworkers=8 --bm --check --no-output -e tr-radix ascii.4gb
+     mce-sort1 --maxworkers=4 -e tr-radix ascii.4gb > sorted.4gb
 ```
 
 ## Description of sequential algorithms
@@ -201,7 +201,7 @@ individually afterwards.
   FREE:    1.167123      free memory
   PASS:    1             check succeeded, used by MCE
 
-  $ ./mce-sort1 --max-workers=1 --bm --check --no-output \
+  $ ./mce-sort1 --maxworkers=1 --bm --check --no-output \
        -e tr-radix /dev/shm/random.ascii.32gb 
 
   pre-sort         :  131.124s
@@ -231,8 +231,8 @@ includes the pre-sorting time.
 ## Output from -e tr-radix, 32 logical PEs
 
 ```
-  $ ./mce-sort1 --max-workers=32 --bm --check --no-output \
-       --parallel-io -e tr-radix /dev/shm/random.ascii.32gb 
+  $ ./mce-sort1 --maxworkers=32 --bm --check --no-output \
+       --parallelio -e tr-radix /dev/shm/random.ascii.32gb 
 
   Stage A   started         :  1398207596.304
   Stage A   finished (part) :  1398207603.347       7.044 seconds
@@ -262,8 +262,8 @@ includes the pre-sorting time.
 ## Output from -e tr-radix, 16 cores
 
 ```
-  $ ./mce-sort1 --max-workers=16 --bm --check --no-output \
-       --parallel-io -e tr-radix /dev/shm/random.ascii.32gb 
+  $ ./mce-sort1 --maxworkers=16 --bm --check --no-output \
+       --parallelio -e tr-radix /dev/shm/random.ascii.32gb 
 
   Stage A   started         :  1398210591.483
   Stage A   finished (part) :  1398210600.789       9.306 seconds
@@ -293,8 +293,8 @@ includes the pre-sorting time.
 ## Output from -e tr-radix, 8 cores
 
 ```
-  $ ./mce-sort1 --max-workers=8 --bm --check --no-output \
-       --parallel-io -e tr-radix /dev/shm/random.ascii.32gb 
+  $ ./mce-sort1 --maxworkers=8 --bm --check --no-output \
+       --parallelio -e tr-radix /dev/shm/random.ascii.32gb 
 
   Stage A   started         :  1398211434.990
   Stage A   finished (part) :  1398211451.131      16.141 seconds
@@ -324,8 +324,8 @@ includes the pre-sorting time.
 ## Output from -e tr-radix, 4 cores
 
 ```
-  $ ./mce-sort1 --max-workers=4 --bm --check --no-output \
-       --parallel-io -e tr-radix /dev/shm/random.ascii.32gb 
+  $ ./mce-sort1 --maxworkers=4 --bm --check --no-output \
+       --parallelio -e tr-radix /dev/shm/random.ascii.32gb 
 
   Stage A   started         :  1398212323.491
   Stage A   finished (part) :  1398212353.307      29.816 seconds
@@ -355,8 +355,8 @@ includes the pre-sorting time.
 ## Output from -e tr-radix, 2 cores
 
 ```
-  $ ./mce-sort1 --max-workers=2 --bm --check --no-output \
-       --parallel-io -e tr-radix /dev/shm/random.ascii.32gb 
+  $ ./mce-sort1 --maxworkers=2 --bm --check --no-output \
+       --parallelio -e tr-radix /dev/shm/random.ascii.32gb 
 
   Stage A   started         :  1398260292.321
   Stage A   finished (part) :  1398260355.075      62.753 seconds
