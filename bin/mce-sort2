@@ -172,6 +172,8 @@ use Inline 'C' => <<'END_C';
    #include <stdlib.h>
    #include <string.h>
 
+   // This is not thread-safe. MCE is configured to not use threads.
+
    size_t m[255], s[255], bucket_size;
    char **a[255];
 
