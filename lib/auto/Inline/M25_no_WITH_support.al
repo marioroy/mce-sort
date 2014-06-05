@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1658 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M25_no_WITH_support.al)"
+#line 1665 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M25_no_WITH_support.al)"
 sub M25_no_WITH_support {
     my ($mod, $err) = @_;
     return <<END;

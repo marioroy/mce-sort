@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1571 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M18_error_old_version.al)"
+#line 1578 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M18_error_old_version.al)"
 sub M18_error_old_version {
     my ($old_version, $directory) = @_;
     $old_version ||= '???';

@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1284 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/_rmtree.al)"
+#line 1291 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/_rmtree.al)"
 sub _rmtree {
     my($roots) = @_;
     $roots = [$roots] unless ref $roots;

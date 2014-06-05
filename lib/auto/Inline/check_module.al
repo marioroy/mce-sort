@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 873 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/check_module.al)"
+#line 875 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/check_module.al)"
 #==============================================================================
 # Check to see if code has already been compiled
 #==============================================================================

@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1484 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M08_no_DATA_source_code.al)"
+#line 1491 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M08_no_DATA_source_code.al)"
 sub M08_no_DATA_source_code {
     my ($lang) = @_;
     return <<END;

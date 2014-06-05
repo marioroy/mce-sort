@@ -1,5 +1,5 @@
 package Inline::C;
-$Inline::C::VERSION = '0.53';
+$Inline::C::VERSION = '0.55';
 $Inline::C::VERSION = eval $Inline::C::VERSION;
 
 use strict;
@@ -191,6 +191,18 @@ END
 	    $o->{STRUCT}{'.any'} = 1;
 	    next;
 	}
+        if($key eq 'PROTOTYPES') {
+          $o->{CONFIG}{PROTOTYPES} = $value;
+          next if $value eq 'ENABLE';
+          next if $value eq 'DISABLE';
+          die "PROTOTYPES can be only either 'ENABLE' or 'DISABLE' - not $value";
+        }
+        if($key eq 'PROTOTYPE') {
+          die "PROTOTYPE configure arg must specify a hash reference"
+            unless ref($value) eq 'HASH';
+          $o->{CONFIG}{PROTOTYPE} = $value;
+          next;
+        }
 	my $class = ref $o; # handles subclasses correctly.
 	croak "'$key' is not a valid config option for $class\n";
     }
@@ -579,11 +591,15 @@ sub xs_bindings {
     my $prefix = (($o->{ILSM}{XS}{PREFIX}) ?
 		  "PREFIX = $o->{ILSM}{XS}{PREFIX}" :
 		  '');
+
+    my $prototypes = defined($o->{CONFIG}{PROTOTYPES}) ? $o->{CONFIG}{PROTOTYPES}
+                                                       : 'DISABLE';
+
     my $XS = <<END;
 
 MODULE = $module	PACKAGE = $pkg	$prefix
 
-PROTOTYPES: DISABLE
+PROTOTYPES: $prototypes
 
 END
 
@@ -603,10 +619,19 @@ END
 		  join(', ', @arg_names), ")\n");
 
 	for my $arg_name (@arg_names) {
-	    my $arg_type = shift @arg_types;
-	    last if $arg_type eq '...';
-	    $XS .= "\t$arg_type\t$arg_name\n";
+	  my $arg_type = shift @arg_types;
+	  last if $arg_type eq '...';
+	  $XS .= "\t$arg_type\t$arg_name\n";
 	}
+
+        my %h;
+        if (defined($o->{CONFIG}{PROTOTYPE})) {
+           %h = %{$o->{CONFIG}{PROTOTYPE}};
+        }
+
+        if(defined($h{$function})) {
+          $XS .= "  PROTOTYPE: $h{$function}\n";
+        }
 
 	my $listargs = '';
 	$listargs = pop @arg_names if (@arg_names and
@@ -779,6 +804,7 @@ sub makefile_pl {
     -f ($perl = $Config::Config{perlpath})
       or ($perl = $^X)
       or croak "Can't locate your perl binary";
+    $perl = qq{"$perl"} if $perl =~ m/\s/;
     $o->system_call("$perl Makefile.PL", 'out.Makefile_PL');
     $o->fix_make;
 }
@@ -786,12 +812,17 @@ sub make {
     my ($o) = @_;
     my $make = $o->{ILSM}{MAKE} || $Config::Config{make}
       or croak "Can't locate your make binary";
+    local $ENV{MAKEFLAGS} = $ENV{MAKEFLAGS} =~ s/(--jobserver-fds=[\d,]+)//
+      if $ENV{MAKEFLAGS};
     $o->system_call("$make", 'out.make');
 }
 sub make_install {
     my ($o) = @_;
     my $make = $o->{ILSM}{MAKE} || $Config::Config{make}
       or croak "Can't locate your make binary";
+    if($ENV{MAKEFLAGS}) { # Avoid uninitialized warnings
+      local $ENV{MAKEFLAGS} = $ENV{MAKEFLAGS} =~ s/(--jobserver-fds=[\d,]+)//;
+    }
     $o->system_call("$make pure_install", 'out.make_install');
 }
 sub cleanup {
@@ -816,6 +847,7 @@ sub system_call {
       defined $ENV{PERL_INLINE_BUILD_NOISY}
       ? $ENV{PERL_INLINE_BUILD_NOISY}
       : $o->{CONFIG}{BUILD_NOISY};
+    $build_noisy = undef if $build_noisy and $^O eq 'MSWin32' and $Config::Config{sh} =~ /^cmd/;
     if (not $build_noisy) {
         $cmd = "$cmd > $output_file 2>&1";
     }
@@ -836,11 +868,12 @@ sub build_error_message {
         close OUTPUT;
     }
 
-    return $output . <<END;
+    my $errcode = $? >> 8;
+    $output .= <<END;
 
 A problem was encountered while attempting to compile and install your Inline
 $o->{API}{language} code. The command that failed was:
-  $cmd
+  \"$cmd\" with error code $errcode
 
 The build directory was:
 $build_dir
@@ -848,6 +881,12 @@ $build_dir
 To debug the problem, cd to the build directory, and inspect the output files.
 
 END
+   if ($cmd =~ /^make >/) {
+     for (sort keys %ENV) {
+       $output .= "$_ = $ENV{$_}\n" if /^MAKE/;
+     }
+   }
+   return $output;
 }
 
 #==============================================================================

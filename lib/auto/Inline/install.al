@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 949 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/install.al)"
+#line 951 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/install.al)"
 #==============================================================================
 # Set things up so that the extension gets installed into the blib/arch.
 # Then 'make install' will do the right thing.

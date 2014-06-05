@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 640 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/receive_code.al)"
+#line 642 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/receive_code.al)"
 #==============================================================================
 # Get the source code
 #==============================================================================

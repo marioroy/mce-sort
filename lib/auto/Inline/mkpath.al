@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1243 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/mkpath.al)"
+#line 1250 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/mkpath.al)"
 #==============================================================================
 # Utility subroutines
 #==============================================================================

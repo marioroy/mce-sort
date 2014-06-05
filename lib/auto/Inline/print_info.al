@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1186 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/print_info.al)"
+#line 1193 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/print_info.al)"
 #==============================================================================
 # Print a small report if PRINT_INFO option is set.
 #==============================================================================

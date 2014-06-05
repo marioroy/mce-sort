@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1508 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M11_usage_DIRECTORY.al)"
+#line 1515 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M11_usage_DIRECTORY.al)"
 sub M11_usage_DIRECTORY {
     my ($value) = @_;
     return <<END;

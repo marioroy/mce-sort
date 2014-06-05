@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1456 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M05_error_eval.al)"
+#line 1463 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M05_error_eval.al)"
 sub M05_error_eval {
     my ($subroutine, $msg) = @_;
     return <<END;

@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1534 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M14_usage_Config.al)"
+#line 1541 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M14_usage_Config.al)"
 sub M14_usage_Config {
     return <<END;
 As of Inline v0.30, use of the Inline::Config module is no longer supported

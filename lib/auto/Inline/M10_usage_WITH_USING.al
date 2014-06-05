@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1500 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M10_usage_WITH_USING.al)"
+#line 1507 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M10_usage_WITH_USING.al)"
 sub M10_usage_WITH_USING {
     return <<END;
 Config option WITH or USING must be a module name or an array ref

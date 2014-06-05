@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1747 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M33_error_old_inline_version.al)"
+#line 1754 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M33_error_old_inline_version.al)"
 sub M33_error_old_inline_version {
     my ($inl) = @_;
     return <<END;

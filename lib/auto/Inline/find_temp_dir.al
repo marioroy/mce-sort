@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1319 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/find_temp_dir.al)"
+#line 1326 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/find_temp_dir.al)"
 #==============================================================================
 # Find the 'Inline' directory to use.
 #==============================================================================

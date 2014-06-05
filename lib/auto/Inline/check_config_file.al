@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 694 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/check_config_file.al)"
+#line 696 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/check_config_file.al)"
 #==============================================================================
 # Read the cached config file from the Inline directory. This will indicate
 # whether the Language code is valid or not.

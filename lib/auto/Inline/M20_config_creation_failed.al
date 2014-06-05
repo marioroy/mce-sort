@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1605 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M20_config_creation_failed.al)"
+#line 1612 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M20_config_creation_failed.al)"
 sub M20_config_creation_failed {
     my ($dir) = @_;
     my $file = File::Spec->catfile(${dir}, $configuration_file);

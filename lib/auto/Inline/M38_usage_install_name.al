@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1802 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M38_usage_install_name.al)"
+#line 1809 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M38_usage_install_name.al)"
 sub M38_usage_install_name {
     return <<END;
 An Inline extension module requires an explicit NAME.

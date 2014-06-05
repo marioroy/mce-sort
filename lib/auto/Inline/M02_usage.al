@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1408 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M02_usage.al)"
+#line 1415 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M02_usage.al)"
 sub M02_usage {
     my $usage = <<END;
 Invalid usage of Inline module. Valid usages are:

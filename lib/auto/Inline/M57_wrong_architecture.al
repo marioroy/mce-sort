@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1960 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M57_wrong_architecture.al)"
+#line 1967 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M57_wrong_architecture.al)"
 sub M57_wrong_architecture {
     my ($ext, $arch, $thisarch) = @_;
     return <<END;

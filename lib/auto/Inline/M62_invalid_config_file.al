@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 2004 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M62_invalid_config_file.al)"
+#line 2011 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M62_invalid_config_file.al)"
 sub M62_invalid_config_file {
     my ($config) = @_;
     return <<END;

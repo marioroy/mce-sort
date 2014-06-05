@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1970 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M58_site_install.al)"
+#line 1977 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M58_site_install.al)"
 sub M58_site_install {
     return <<END;
 You have specified the SITE_INSTALL command. Support for this option has

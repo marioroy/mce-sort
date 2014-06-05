@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1391 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M01_usage_use.al)"
+#line 1398 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M01_usage_use.al)"
 # Comment out the next 2 lines to stop autoloading of messages (for testing)
 #1;
 #__END__

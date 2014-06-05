@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1862 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M46_usage_with_bad.al)"
+#line 1869 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M46_usage_with_bad.al)"
 sub M46_usage_with_bad {
     my $mod = shift;
     return <<END;

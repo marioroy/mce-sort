@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1871 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M47_invalid_config_option.al)"
+#line 1878 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M47_invalid_config_option.al)"
 sub M47_invalid_config_option {
     my ($option) = @_;
     return <<END;

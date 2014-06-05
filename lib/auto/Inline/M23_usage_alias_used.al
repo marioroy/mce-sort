@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1636 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M23_usage_alias_used.al)"
+#line 1643 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M23_usage_alias_used.al)"
 sub M23_usage_alias_used {
     my ($new_mod, $alias, $old_mod) = @_;
     return <<END;

@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1544 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M15_usage_install_directory.al)"
+#line 1551 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M15_usage_install_directory.al)"
 sub M15_usage_install_directory {
     return <<END;
 Can't use the DIRECTORY option when installing an Inline extension module.

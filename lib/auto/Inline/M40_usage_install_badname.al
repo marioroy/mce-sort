@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1816 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M40_usage_install_badname.al)"
+#line 1823 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M40_usage_install_badname.al)"
 sub M40_usage_install_badname {
     my ($name, $pkg) = @_;
     return <<END;

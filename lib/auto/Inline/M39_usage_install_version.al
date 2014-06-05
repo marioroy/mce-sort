@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1809 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M39_usage_install_version.al)"
+#line 1816 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M39_usage_install_version.al)"
 sub M39_usage_install_version {
     return <<END;
 An Inline extension module requires an explicit VERSION.

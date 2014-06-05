@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1676 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M27_module_not_indexed.al)"
+#line 1683 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M27_module_not_indexed.al)"
 sub M27_module_not_indexed {
     my ($mod) = @_;
     return <<END;

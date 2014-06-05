@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1584 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M19_usage_language.al)"
+#line 1591 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M19_usage_language.al)"
 sub M19_usage_language {
     my ($language, $directory) = @_;
     require Config;

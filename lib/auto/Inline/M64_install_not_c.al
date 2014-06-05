@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 2028 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M64_install_not_c.al)"
+#line 2035 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M64_install_not_c.al)"
 sub M64_install_not_c {
     my ($lang) = @_;
     return <<END;

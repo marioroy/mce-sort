@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1623 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M22_usage_register.al)"
+#line 1630 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M22_usage_register.al)"
 sub M22_usage_register {
     my ($language, $error) = @_;
     return <<END;

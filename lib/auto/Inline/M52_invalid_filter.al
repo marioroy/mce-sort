@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1913 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M52_invalid_filter.al)"
+#line 1920 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M52_invalid_filter.al)"
 sub M52_invalid_filter {
     my ($filter) = @_;
     return <<END;

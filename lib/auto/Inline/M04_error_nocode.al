@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1448 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M04_error_nocode.al)"
+#line 1455 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M04_error_nocode.al)"
 sub M04_error_nocode {
     my ($language) = @_;
     return <<END;

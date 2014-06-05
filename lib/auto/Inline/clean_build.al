@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1088 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/clean_build.al)"
+#line 1095 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/clean_build.al)"
 #==============================================================================
 # Clean the build directory from previous builds
 #==============================================================================

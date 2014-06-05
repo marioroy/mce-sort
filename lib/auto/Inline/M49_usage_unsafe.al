@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1892 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M49_usage_unsafe.al)"
+#line 1899 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M49_usage_unsafe.al)"
 sub M49_usage_unsafe {
     my ($terminate) = @_;
     return <<END .

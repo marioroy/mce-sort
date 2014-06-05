@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1794 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M37_usage_install_auto.al)"
+#line 1801 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M37_usage_install_auto.al)"
 sub M37_usage_install_auto {
     return <<END;
 Can't install an Inline extension module with AUTONAME enabled.

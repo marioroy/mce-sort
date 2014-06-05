@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1071 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/obj_untaint.al)"
+#line 1078 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/obj_untaint.al)"
 #==============================================================================
 # Blindly untaint tainted fields in Inline object.
 #==============================================================================

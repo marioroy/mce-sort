@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1880 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M48_usage_shortcuts.al)"
+#line 1887 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M48_usage_shortcuts.al)"
 sub M48_usage_shortcuts {
     my ($shortcut) = @_;
     return <<END;

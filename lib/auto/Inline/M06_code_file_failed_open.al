@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1465 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M06_code_file_failed_open.al)"
+#line 1472 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M06_code_file_failed_open.al)"
 sub M06_code_file_failed_open {
     my ($file) = @_;
     return <<END;

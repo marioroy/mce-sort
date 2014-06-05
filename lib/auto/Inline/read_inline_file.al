@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 671 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/read_inline_file.al)"
+#line 673 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/read_inline_file.al)"
 #==============================================================================
 # Get the source code from an Inline::Files filehandle
 #==============================================================================

@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1842 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M43_error_bootstrap.al)"
+#line 1849 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M43_error_bootstrap.al)"
 sub M43_error_bootstrap {
     my ($mod, $err) = @_;
     return <<END;

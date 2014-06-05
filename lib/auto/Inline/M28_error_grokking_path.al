@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1685 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M28_error_grokking_path.al)"
+#line 1692 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M28_error_grokking_path.al)"
 sub M28_error_grokking_path {
     my ($path) = @_;
     return <<END;

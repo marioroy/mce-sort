@@ -2,7 +2,7 @@ package Inline;
 
 use strict;
 require 5.006;
-$Inline::VERSION = '0.53';
+$Inline::VERSION = '0.55';
 $Inline::VERSION = eval $Inline::VERSION;
 
 use AutoLoader 'AUTOLOAD';
@@ -12,6 +12,7 @@ use Carp;
 use Cwd qw(abs_path cwd);
 use File::Spec;
 use File::Spec::Unix;
+use Fcntl qw(LOCK_EX LOCK_UN);
 
 my %CONFIG = ();
 my @DATA_OBJS = ();
@@ -278,6 +279,7 @@ sub glue {
     if ($o->{INLINE}{ILSM_suffix} ne 'so' and
 	$o->{INLINE}{ILSM_suffix} ne 'dll' and
 	$o->{INLINE}{ILSM_suffix} ne 'bundle' and
+	$o->{INLINE}{ILSM_suffix} ne 'sl' and
 	ref($o) eq 'Inline'
        ) {
 	eval "require $o->{INLINE}{ILSM_module}";
@@ -857,7 +859,7 @@ sub create_config_file {
 
     my $file = File::Spec->catfile($ARGV[0], $configuration_file);
     open CONFIG, "> $file" or croak M24_open_for_output_failed($file);
-    flock(CONFIG, LOCK_EX);
+    flock(CONFIG, LOCK_EX) if $^O !~ /^VMS|riscos|VOS$/;
     print CONFIG Inline::denter->new()
       ->indent(*version => $Inline::VERSION,
 	       *languages => \%languages,
@@ -865,7 +867,7 @@ sub create_config_file {
 	       *modules => \%modules,
 	       *suffixes => \%suffixes,
 	      );
-    flock(CONFIG, LOCK_UN);
+    flock(CONFIG, LOCK_UN) if $^O !~ /^VMS|riscos|VOS$/;
     close CONFIG;
     exit 0;
 }
@@ -1063,10 +1065,15 @@ sub env_untaint {
                  join ';', grep {not /^\./ and -d $_
 				  } split /;/, $ENV{PATH}
                  :
-                 join ':', grep {not /^\./ and -d $_ and
-				      not ((stat($_))[2] & 0022)
-				  } split /:/, $ENV{PATH};
+                 join ':', grep {not /^\./ and -d $_ and not -w $_ || -W $_
+                                  } split /:/, $ENV{PATH};
+# Was:
+#                join ':', grep {not /^\./ and -d $_ and
+#		                 not ((stat($_))[2] & 0022)
+#				  } split /:/, $ENV{PATH};
+
     map {($_) = /(.*)/} @INC;
+
 }
 #==============================================================================
 # Blindly untaint tainted fields in Inline object.

@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1031 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/with_configs.al)"
+#line 1033 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/with_configs.al)"
 #==============================================================================
 # Get config hints
 #==============================================================================

@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1383 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/_mkdir.al)"
+#line 1390 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/_mkdir.al)"
 sub _mkdir {
     my $dir = shift;
     my $mode = shift || 0777;

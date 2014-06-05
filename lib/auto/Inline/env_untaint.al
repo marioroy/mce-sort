@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1048 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/env_untaint.al)"
+#line 1050 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/env_untaint.al)"
 #==============================================================================
 # Blindly untaint tainted fields in %ENV.
 #==============================================================================
@@ -22,10 +22,15 @@ sub env_untaint {
                  join ';', grep {not /^\./ and -d $_
 				  } split /;/, $ENV{PATH}
                  :
-                 join ':', grep {not /^\./ and -d $_ and
-				      not ((stat($_))[2] & 0022)
-				  } split /:/, $ENV{PATH};
+                 join ':', grep {not /^\./ and -d $_ and not -w $_ || -W $_
+                                  } split /:/, $ENV{PATH};
+# Was:
+#                join ':', grep {not /^\./ and -d $_ and
+#		                 not ((stat($_))[2] & 0022)
+#				  } split /:/, $ENV{PATH};
+
     map {($_) = /(.*)/} @INC;
+
 }
 
 # end of Inline::env_untaint

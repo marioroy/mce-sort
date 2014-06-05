@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1235 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/maker_utils.al)"
+#line 1242 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/maker_utils.al)"
 #==============================================================================
 # Hand off this invokation to Inline::MakeMaker
 #==============================================================================

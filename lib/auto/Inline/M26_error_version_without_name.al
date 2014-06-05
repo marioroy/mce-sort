@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1669 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M26_error_version_without_name.al)"
+#line 1676 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M26_error_version_without_name.al)"
 sub M26_error_version_without_name {
     return <<END;
 Specifying VERSION option without NAME option is not permitted.

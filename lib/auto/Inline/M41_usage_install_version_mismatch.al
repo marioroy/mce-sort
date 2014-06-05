@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1826 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M41_usage_install_version_mismatch.al)"
+#line 1833 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M41_usage_install_version_mismatch.al)"
 sub M41_usage_install_version_mismatch {
     my ($mod_name, $mod_ver, $ext_name, $ext_ver) = @_;
     <<END;

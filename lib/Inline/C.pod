@@ -214,6 +214,23 @@ otherwise the specified value is inserted.
 
   use Inline C => Config => PRE_HEAD => $code_or_filename;
 
+=head2 PROTOTYPE
+
+Corresponds to the XS keyword 'PROTOTYPE'. See the perlxs documentation
+for both 'PROTOTYPES' and 'PROTOTYPE'. As an example, the following
+will set the PROTOTYPE of the 'foo' function to '$', and disable
+prototyping for the 'bar' function.
+
+  use Inline C => Config => PROTOTYPE => {foo => '$', bar => 'DISABLE'}
+
+=head2 PROTOTYPES
+
+Corresponds to the XS keyword 'PROTOTYPES'. Can take only values of
+'ENABLE' or 'DISABLE'. (Contrary to XS, default value is 'DISABLE').
+See the perlxs documentation for both 'PROTOTYPES' and 'PROTOTYPE'.
+
+  use Inline C => Config => PROTOTYPES => 'ENABLE';
+
 =head2 TYPEMAPS
 
 Specifies extra typemap files to use. These types will modify the
@@ -367,7 +384,7 @@ All of this functionality is available through XS macro calls as well.
 So why duplicate the functionality? There are a few reasons why I
 decided to offer this set of macros. First, as a convenient way to
 access the Stack. Second, for consistent, self documenting, non-cryptic
-coding. Third, for future compatibility. It occured to me that if a lot
+coding. Third, for future compatibility. It occurred to me that if a lot
 of people started using XS macros for their C code, the interface might
 break under Perl6. By using this set, hopefully I will be able to insure
 future compatibility of argument handling.
@@ -475,7 +492,7 @@ internal API. See C<perldoc perlapi> for more info.
 
 One problem is that C<SvPVX> doesn't automatically convert strings
 to numbers, so we get a little surprise when we try to greet C<42>.
-The program segfaults, a common occurence when delving into the
+The program segfaults, a common occurrence when delving into the
 guts of Perl.
 
     use Inline C;

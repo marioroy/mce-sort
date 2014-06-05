@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 2019 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M63_no_source.al)"
+#line 2026 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M63_no_source.al)"
 sub M63_no_source {
     my ($pkg) = @_;
     return <<END;

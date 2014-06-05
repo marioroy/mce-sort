@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1989 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M60_no_inline_files.al)"
+#line 1996 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M60_no_inline_files.al)"
 sub M60_no_inline_files {
     return <<END;
 It appears that you have requested to use Inline with Inline::Files.

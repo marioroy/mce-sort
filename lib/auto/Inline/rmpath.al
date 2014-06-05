@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1265 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/rmpath.al)"
+#line 1272 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/rmpath.al)"
 #==============================================================================
 # Nuke a path (nicely)
 #==============================================================================

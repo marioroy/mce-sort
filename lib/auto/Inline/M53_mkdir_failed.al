@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1921 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M53_mkdir_failed.al)"
+#line 1928 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M53_mkdir_failed.al)"
 sub M53_mkdir_failed {
     my ($dir) = @_;
     return <<END;

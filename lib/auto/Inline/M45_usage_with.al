@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1852 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M45_usage_with.al)"
+#line 1859 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M45_usage_with.al)"
 sub M45_usage_with {
     return <<END;
 Syntax error detected using 'use Inline with ...'.

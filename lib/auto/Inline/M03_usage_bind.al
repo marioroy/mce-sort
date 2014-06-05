@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1431 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M03_usage_bind.al)"
+#line 1438 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M03_usage_bind.al)"
 sub M03_usage_bind {
     my $usage = <<END;
 Invalid usage of the Inline->bind() function. Valid usages are:

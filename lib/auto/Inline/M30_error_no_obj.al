@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 1703 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M30_error_no_obj.al)"
+#line 1710 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/M30_error_no_obj.al)"
 sub M30_error_no_obj {
     my ($name, $pkg, $path) = @_;
     <<END;

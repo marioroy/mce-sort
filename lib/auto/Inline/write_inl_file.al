@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Inline;
 
-#line 998 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/write_inl_file.al)"
+#line 1000 "blib/lib/Inline.pm (autosplit into blib/lib/auto/Inline/write_inl_file.al)"
 #==============================================================================
 # Create the .inl file for an object
 #==============================================================================
