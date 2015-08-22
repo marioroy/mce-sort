@@ -93,12 +93,12 @@ Running.
 ### Description of sequential algorithms
 
 ```
-  mr-merge.cc    Merge sort implementation (my challenge assignment)
+mr-merge.cc    Merge sort implementation (my challenge assignment)
 
-  bs-mkqs.cc     Multikey quicksort by Bentley and Sedgewick [1]
-  ng-cradix.cc   Cache efficient radix sort by Waihong Ng    [2]
-  tb-radix.cc    Radix sort implementation by Timo Bingmann  [3]
-  tr-radix.cc    8-bit in-place radix sort by Tommi Rantala  [4]
+bs-mkqs.cc     Multikey quicksort by Bentley and Sedgewick [1]
+ng-cradix.cc   Cache efficient radix sort by Waihong Ng    [2]
+tb-radix.cc    Radix sort implementation by Timo Bingmann  [3]
+tr-radix.cc    8-bit in-place radix sort by Tommi Rantala  [4]
 ```
 
 ### References
