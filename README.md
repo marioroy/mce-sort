@@ -213,159 +213,161 @@ includes the pre-sorting time.
 ### Output from -e tr-radix, 32 logical PEs
 
 ```
-  $ ./mce-sort1 --maxworkers=32 --bm --check --no-output \
-       --parallelio -e tr-radix /dev/shm/random.ascii.32gb 
+$ ./mce-sort1 --maxworkers=32 --bm --check --no-output \
+     --parallelio -e tr-radix /dev/shm/random.ascii.32gb 
 
-  Stage A   started         :  1398207596.304
-  Stage A   finished (part) :  1398207603.347       7.044 seconds
+Stage A   started         :  1398207596.304
+Stage A   finished (part) :  1398207603.347       7.044 seconds
 
-  Stage B/C started         :  1398207603.348
-  Stage B   finished (sort) :  1398207633.857      30.509 seconds
+Stage B/C started         :  1398207603.348
+Stage B   finished (sort) :  1398207633.857      30.509 seconds
 
-            load partitions :        1.486731
-            fill ptr arrays :        2.898013
-            sort ptr arrays :       15.241647
-            check sorted    :       10.768132 (OK)
-            free memory     :        0.114815
+          load partitions :        1.486731
+          fill ptr arrays :        2.898013
+          sort ptr arrays :       15.241647
+          check sorted    :       10.768132 (OK)
+          free memory     :        0.114815
 
-  Stage C   finished (outp) :  1398207633.991      30.643 seconds
+Stage C   finished (outp) :  1398207633.991      30.643 seconds
 
-                 total time :  1398207633.991      37.687 seconds
+               total time :  1398207633.991      37.687 seconds
 
-  Absolute run time (partition and sort ptr arrays)
+Absolute run time (partition and sort ptr arrays)
 
-  $ mce-sort1 -e bs-mkqs    :  7.159 + 45.397   =  52.556s
-  $ mce-sort1 -e mr-merge   :  7.148 + 83.287   =  90.435s
-  $ mce-sort1 -e ng-cradix  :  7.139 + 27.203   =  34.342s
-  $ mce-sort1 -e tb-radix   :  7.084 + 18.498   =  25.582s
-  $ mce-sort1 -e tr-radix   :  7.044 + 15.242   =  22.286s
+$ mce-sort1 -e bs-mkqs    :  7.159 + 45.397   =  52.556s
+$ mce-sort1 -e mr-merge   :  7.148 + 83.287   =  90.435s
+$ mce-sort1 -e ng-cradix  :  7.139 + 27.203   =  34.342s
+$ mce-sort1 -e tb-radix   :  7.084 + 18.498   =  25.582s
+$ mce-sort1 -e tr-radix   :  7.044 + 15.242   =  22.286s
 ```
 
 ### Output from -e tr-radix, 16 cores
 
 ```
-  $ ./mce-sort1 --maxworkers=16 --bm --check --no-output \
-       --parallelio -e tr-radix /dev/shm/random.ascii.32gb 
+$ ./mce-sort1 --maxworkers=16 --bm --check --no-output \
+     --parallelio -e tr-radix /dev/shm/random.ascii.32gb 
 
-  Stage A   started         :  1398210591.483
-  Stage A   finished (part) :  1398210600.789       9.306 seconds
+Stage A   started         :  1398210591.483
+Stage A   finished (part) :  1398210600.789       9.306 seconds
 
-  Stage B/C started         :  1398210600.790
-  Stage B   finished (sort) :  1398210636.227      35.437 seconds
+Stage B/C started         :  1398210600.790
+Stage B   finished (sort) :  1398210636.227      35.437 seconds
 
-            load partitions :        1.221781
-            fill ptr arrays :        3.966185
-            sort ptr arrays :       18.156220
-            check sorted    :       11.988952 (OK)
-            free memory     :        0.103446
+          load partitions :        1.221781
+          fill ptr arrays :        3.966185
+          sort ptr arrays :       18.156220
+          check sorted    :       11.988952 (OK)
+          free memory     :        0.103446
 
-  Stage C   finished (outp) :  1398210636.250      35.460 seconds
+Stage C   finished (outp) :  1398210636.250      35.460 seconds
 
-                 total time :  1398210636.251      44.767 seconds
+               total time :  1398210636.251      44.767 seconds
 
-  Absolute run time (partition and sort ptr arrays)
+Absolute run time (partition and sort ptr arrays)
 
-  $ mce-sort1 -e bs-mkqs    :  9.275 + 49.798   =  59.073s
-  $ mce-sort1 -e mr-merge   :  9.235 + 96.876   = 106.111s
-  $ mce-sort1 -e ng-cradix  :  9.367 + 35.207   =  44.574s
-  $ mce-sort1 -e tb-radix   :  9.289 + 21.994   =  31.283s
-  $ mce-sort1 -e tr-radix   :  9.306 + 18.156   =  27.462s
+$ mce-sort1 -e bs-mkqs    :  9.275 + 49.798   =  59.073s
+$ mce-sort1 -e mr-merge   :  9.235 + 96.876   = 106.111s
+$ mce-sort1 -e ng-cradix  :  9.367 + 35.207   =  44.574s
+$ mce-sort1 -e tb-radix   :  9.289 + 21.994   =  31.283s
+$ mce-sort1 -e tr-radix   :  9.306 + 18.156   =  27.462s
 ```
 
 ### Output from -e tr-radix, 8 cores
 
 ```
-  $ ./mce-sort1 --maxworkers=8 --bm --check --no-output \
-       --parallelio -e tr-radix /dev/shm/random.ascii.32gb 
+$ ./mce-sort1 --maxworkers=8 --bm --check --no-output \
+     --parallelio -e tr-radix /dev/shm/random.ascii.32gb 
 
-  Stage A   started         :  1398211434.990
-  Stage A   finished (part) :  1398211451.131      16.141 seconds
+Stage A   started         :  1398211434.990
+Stage A   finished (part) :  1398211451.131      16.141 seconds
 
-  Stage B/C started         :  1398211451.132
-  Stage B   finished (sort) :  1398211511.304      60.171 seconds
+Stage B/C started         :  1398211451.132
+Stage B   finished (sort) :  1398211511.304      60.171 seconds
 
-            load partitions :        2.001858
-            fill ptr arrays :        7.352689
-            sort ptr arrays :       31.115341
-            check sorted    :       19.534765 (OK)
-            free memory     :        0.166683
+          load partitions :        2.001858
+          fill ptr arrays :        7.352689
+          sort ptr arrays :       31.115341
+          check sorted    :       19.534765 (OK)
+          free memory     :        0.166683
 
-  Stage C   finished (outp) :  1398211511.326      60.193 seconds
+Stage C   finished (outp) :  1398211511.326      60.193 seconds
 
-                 total time :  1398211511.326      76.336 seconds
+               total time :  1398211511.326      76.336 seconds
 
-  Absolute run time (partition and sort ptr arrays)
+Absolute run time (partition and sort ptr arrays)
 
-  $ mce-sort1 -e bs-mkqs    : 16.152 +  83.508  =  99.660s
-  $ mce-sort1 -e mr-merge   : 16.324 + 158.930  = 175.254s
-  $ mce-sort1 -e ng-cradix  : 16.480 +  64.353  =  80.833s
-  $ mce-sort1 -e tb-radix   : 16.256 +  37.481  =  53.737s
-  $ mce-sort1 -e tr-radix   : 16.141 +  31.115  =  47.256s
+$ mce-sort1 -e bs-mkqs    : 16.152 +  83.508  =  99.660s
+$ mce-sort1 -e mr-merge   : 16.324 + 158.930  = 175.254s
+$ mce-sort1 -e ng-cradix  : 16.480 +  64.353  =  80.833s
+$ mce-sort1 -e tb-radix   : 16.256 +  37.481  =  53.737s
+$ mce-sort1 -e tr-radix   : 16.141 +  31.115  =  47.256s
 ```
 
 ### Output from -e tr-radix, 4 cores
 
 ```
-  $ ./mce-sort1 --maxworkers=4 --bm --check --no-output \
-       --parallelio -e tr-radix /dev/shm/random.ascii.32gb 
+$ ./mce-sort1 --maxworkers=4 --bm --check --no-output \
+     --parallelio -e tr-radix /dev/shm/random.ascii.32gb 
 
-  Stage A   started         :  1398212323.491
-  Stage A   finished (part) :  1398212353.307      29.816 seconds
+Stage A   started         :  1398212323.491
+Stage A   finished (part) :  1398212353.307      29.816 seconds
 
-  Stage B/C started         :  1398212353.308
-  Stage B   finished (sort) :  1398212460.899     107.592 seconds
+Stage B/C started         :  1398212353.308
+Stage B   finished (sort) :  1398212460.899     107.592 seconds
 
-            load partitions :        3.667963
-            fill ptr arrays :       13.764580
-            sort ptr arrays :       56.020127
-            check sorted    :       33.846885 (OK)
-            free memory     :        0.291969
+          load partitions :        3.667963
+          fill ptr arrays :       13.764580
+          sort ptr arrays :       56.020127
+          check sorted    :       33.846885 (OK)
+          free memory     :        0.291969
 
-  Stage C   finished (outp) :  1398212460.923     107.616 seconds
+Stage C   finished (outp) :  1398212460.923     107.616 seconds
 
-                 total time :  1398212460.924     137.433 seconds
+               total time :  1398212460.924     137.433 seconds
 
-  Absolute run time (partition and sort ptr arrays)
+Absolute run time (partition and sort ptr arrays)
 
-  $ mce-sort1 -e bs-mkqs    : 29.797 + 150.758  = 180.555s
-  $ mce-sort1 -e mr-merge   : 29.599 + 281.767  = 311.366s
-  $ mce-sort1 -e ng-cradix  : 30.003 + 120.985  = 150.988s
-  $ mce-sort1 -e tb-radix   : 29.989 +  68.455  =  98.444s
-  $ mce-sort1 -e tr-radix   : 29.816 +  56.020  =  85.836s
+$ mce-sort1 -e bs-mkqs    : 29.797 + 150.758  = 180.555s
+$ mce-sort1 -e mr-merge   : 29.599 + 281.767  = 311.366s
+$ mce-sort1 -e ng-cradix  : 30.003 + 120.985  = 150.988s
+$ mce-sort1 -e tb-radix   : 29.989 +  68.455  =  98.444s
+$ mce-sort1 -e tr-radix   : 29.816 +  56.020  =  85.836s
 ```
 
 ### Output from -e tr-radix, 2 cores
 
 ```
-  $ ./mce-sort1 --maxworkers=2 --bm --check --no-output \
-       --parallelio -e tr-radix /dev/shm/random.ascii.32gb 
+$ ./mce-sort1 --maxworkers=2 --bm --check --no-output \
+     --parallelio -e tr-radix /dev/shm/random.ascii.32gb 
 
-  Stage A   started         :  1398260292.321
-  Stage A   finished (part) :  1398260355.075      62.753 seconds
+Stage A   started         :  1398260292.321
+Stage A   finished (part) :  1398260355.075      62.753 seconds
 
-  Stage B/C started         :  1398260355.075
-  Stage B   finished (sort) :  1398260566.739     211.664 seconds
+Stage B/C started         :  1398260355.075
+Stage B   finished (sort) :  1398260566.739     211.664 seconds
 
-            load partitions :        6.808906
-            fill ptr arrays :       27.260062
-            sort ptr arrays :      109.924428
-            check sorted    :       66.974057 (OK)
-            free memory     :        0.696213
+          load partitions :        6.808906
+          fill ptr arrays :       27.260062
+          sort ptr arrays :      109.924428
+          check sorted    :       66.974057 (OK)
+          free memory     :        0.696213
 
-  Stage C   finished (outp) :  1398260566.780     211.704 seconds
+Stage C   finished (outp) :  1398260566.780     211.704 seconds
 
-                 total time :  1398260566.780     274.458 seconds
+               total time :  1398260566.780     274.458 seconds
 
-  Absolute run time (partition and sort ptr arrays)
+Absolute run time (partition and sort ptr arrays)
 
-  $ mce-sort1 -e bs-mkqs    : 63.247 + 335.976  = 399.223s
-  $ mce-sort1 -e mr-merge   : 63.181 + 595.826  = 659.007s
-  $ mce-sort1 -e ng-cradix  : 63.172 + 268.639  = 331.811s
-  $ mce-sort1 -e tb-radix   : 62.960 + 136.550  = 199.510s
-  $ mce-sort1 -e tr-radix   : 62.753 + 109.924  = 172.677s
+$ mce-sort1 -e bs-mkqs    : 63.247 + 335.976  = 399.223s
+$ mce-sort1 -e mr-merge   : 63.181 + 595.826  = 659.007s
+$ mce-sort1 -e ng-cradix  : 63.172 + 268.639  = 331.811s
+$ mce-sort1 -e tb-radix   : 62.960 + 136.550  = 199.510s
+$ mce-sort1 -e tr-radix   : 62.753 + 109.924  = 172.677s
 ```
+
+### Thank you
 
 Thank you to the folks whom have contributed fast sorting algorithms to
 the world. Fast sequential algorithms can be parallelized with mce-sort1
-(string sorting currently).
+(only string sorting currently).
 
