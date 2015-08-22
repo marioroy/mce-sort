@@ -1,4 +1,4 @@
-# Sorting "random words" with Many-core Engine for Perl
+## Sorting "random words" with Many-core Engine for Perl
 
 It is March of 2014. A group of folks at work have decided to work on
 a sorting challenge just for fun. I am the author of a Perl module named
@@ -22,7 +22,7 @@ using 7-bit versus 8-bit for the array type. So, I normalized on using
 7-bit for all the examples. The number of keys in the radix implementations
 were changed from 256 to 128 as well.
 
-## Directory content
+### Directory content
 
 ```
   .Inline/   The Perl Inline module creates this directory. Any changes made
@@ -44,7 +44,7 @@ were changed from 256 to 128 as well.
              main.h, and the Makefile.
 ```
       
-## Usage
+### Usage
 
 Required Perl modules under CentOS/RedHat.
 
@@ -98,7 +98,7 @@ Running.
      mce-sort1 --maxworkers=4 -e tr-radix ascii.4gb > sorted.4gb
 ```
 
-## Description of sequential algorithms
+### Description of sequential algorithms
 
 ```
   mr-merge.cc    Merge sort implementation (my challenge assignment)
@@ -109,7 +109,7 @@ Running.
   tr-radix.cc    8-bit in-place radix sort by Tommi Rantala  [4]
 ```
 
-## References
+### References
 
 1. ** J. Bentley and R. Sedgewick.
    Fast algorithms for sorting and searching strings. In Proceedings
@@ -132,7 +132,7 @@ Running.
    Retrieval. Number 5280 in LNCS. Springer (2009) 3–14
    https://github.com/rantala/string-sorting
 
-## Testing
+### Testing
 
 Obtain the 1 GB Random test file from below URL and extract to /dev/shm/.
 http://panthema.net/2013/parallel-string-sorting/
@@ -165,7 +165,7 @@ memory allocated evenly across all CPU nodes. Check with numactl -H.
   numactl -H
 ```
 
-## Sorting
+### Sorting
 
 The sorting process is done in 3 stages. Inline C is used to handle
 pre-sorting. CPU affinity is applied under the Linux environment.
@@ -180,7 +180,7 @@ The pre-sorting logic is suited for string sorting only. No attempt was made
 to sort a file having the same first character for every line. So, not useful
 in that regard. The challenge was sorting a file having many random words.
 
-## Absolute run time in seconds
+### Absolute run time in seconds
 
 The system is a dual Intel Xeon E5-2660 (v1), 1600 MHz 128GB, running
 Fedora 20 x86_64. The box has 16 real cores (32 logical PEs).
@@ -228,7 +228,7 @@ includes the pre-sorting time.
   Random, n = 3.27 billion strings, N = 32 Gi File
 ```
 
-## Output from -e tr-radix, 32 logical PEs
+### Output from -e tr-radix, 32 logical PEs
 
 ```
   $ ./mce-sort1 --maxworkers=32 --bm --check --no-output \
@@ -259,7 +259,7 @@ includes the pre-sorting time.
   mce-sort1 -e tr-radix     :  7.044 + 15.242   =  22.286s
 ```
 
-## Output from -e tr-radix, 16 cores
+### Output from -e tr-radix, 16 cores
 
 ```
   $ ./mce-sort1 --maxworkers=16 --bm --check --no-output \
@@ -290,7 +290,7 @@ includes the pre-sorting time.
   mce-sort1 -e tr-radix     :  9.306 + 18.156   =  27.462s
 ```
 
-## Output from -e tr-radix, 8 cores
+### Output from -e tr-radix, 8 cores
 
 ```
   $ ./mce-sort1 --maxworkers=8 --bm --check --no-output \
@@ -321,7 +321,7 @@ includes the pre-sorting time.
   mce-sort1 -e tr-radix     : 16.141 +  31.115  =  47.256s
 ```
 
-## Output from -e tr-radix, 4 cores
+### Output from -e tr-radix, 4 cores
 
 ```
   $ ./mce-sort1 --maxworkers=4 --bm --check --no-output \
@@ -352,7 +352,7 @@ includes the pre-sorting time.
   mce-sort1 -e tr-radix     : 29.816 +  56.020  =  85.836s
 ```
 
-## Output from -e tr-radix, 2 cores
+### Output from -e tr-radix, 2 cores
 
 ```
   $ ./mce-sort1 --maxworkers=2 --bm --check --no-output \
