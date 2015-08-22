@@ -1,4 +1,4 @@
-## Sorting "random words" with Many-core Engine for Perl
+## Sorting "random words" with Many-core Engine
 
 It is March of 2014. A group of folks at work have decided to work on
 a sorting challenge just for fun. I am the author of a Perl module named
