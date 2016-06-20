@@ -11,15 +11,15 @@ the unix sort binary, I wanted faster and searched the web.
 
 One of the links pointed me to the multikey quicksort implementation by
 Bentley and Sedgewick. [1] That performs quite well and is faster than
-mr-merge. However, I wondered if sorting could go even faster and
-searched again. My search ended at this amazing site by Timo Bingmann.
+mr-merge. However, I wondered if sorting could run faster and searched
+again. My search ended at this amazing site by Timo Bingmann.
 
 http://panthema.net/2013/parallel-string-sorting/
 
 My goal was nothing more than to take several fast sequential algorithms
 and parallelize using the MCE Perl module. I began with bs-mkqs which is
 using 7-bit versus 8-bit for the array type. So, I normalized on using
-7-bit for all the examples. The number of keys in the radix implementations
+7-bit for all examples. The number of keys in the radix implementations
 were changed from 256 to 128 as well.
 
 ### Directory content
@@ -32,11 +32,11 @@ were changed from 256 to 128 as well.
     bin/      bs-mkqs, mr-merge, ng-cradix, tb-radix, tr-radix
 
               mce-sort1 :  95 buckets
-              mce-sort2 : 189 buckets (double)
+              mce-sort2 : 189 buckets
 
               Each bucket requires a file handle during the pre-sorting stage.
 
-    lib/      Perl modules MCE, Inline, Parse::RecDescent (needed by Inline), 
+    lib/      Perl modules MCE, Inline, Parse::RecDescent (required by Inline), 
               and CpuAffinity.
 
     src/      bs-mkqs.cc, mr-merge.cc, ng-cradix.cc, tb-radix.cc, tr-radix.cc,
@@ -49,7 +49,7 @@ Required Perl modules under CentOS/RedHat.
     $ yum install perl-ExtUtils-MakeMaker
     $ yum install perl-Time-HiRes  (not included with Perl 5.8.x)
 
-Inline and Parse::RecDescent modules are included under the lib dir and
+Both Inline and Parse::RecDescent modules are included under the lib dir and
 not necessary to install.
 
 Compile the sources.
@@ -72,7 +72,7 @@ Running.
 
     DESCRIPTION
        The mce-sort1 script utilizes MCE to sort FILE in parallel.
-       The partition logic is suited for string sorting as of this time.
+       As of this time, the partition logic is suited for string sorting.
 
        The following options are available:
 
@@ -89,6 +89,9 @@ Running.
     EXAMPLES
        mce-sort1 --maxworkers=8 --bm --check --no-output -e tr-radix ascii.4gb
        mce-sort1 --maxworkers=4 -e tr-radix ascii.4gb > sorted.4gb
+
+       mce-sort2 --maxworkers=8 --bm --check --no-output -e tr-radix ascii.4gb
+       mce-sort2 --maxworkers=4 -e tr-radix ascii.4gb > sorted.4gb
 
 ### Description of sequential algorithms
 
@@ -158,7 +161,7 @@ memory allocated evenly across all CPU nodes. Check with numactl -H.
 The sorting process is done in 3 stages. Inline C is used to handle
 pre-sorting. CPU affinity is applied under the Linux environment.
 
-    Partition (fast 1 character pre-sorting into individual buckets)
+    Partition (fast pre-sorting into individual buckets)
     Sequential sorting (choose an algorithm of your liking)
     Serialize output (runs alongside Stage B)
 
@@ -174,7 +177,7 @@ Fedora 20 x86_64. The box has 16 real cores (32 logical PEs).
 Running with 1 core takes 405.848 seconds to sort the pointer array.
 Interestingly enough is that it takes 357.870 seconds with mce-sort1.
 The pre-sorting stage creates up to 95 partitions which are sorted
-individually afterwards.
+individually afterwards. Mce-sort2 creates up to 189 partitions.
 
     $ ./tr-radix --bm --check --no-output /dev/shm/random.ascii.32gb
 
@@ -369,5 +372,5 @@ $ mce-sort1 -e tr-radix   : 62.753 + 109.924  = 172.677s
 
 Thank you to the folks whom have contributed fast sorting algorithms to
 the world. Fast sequential algorithms can be parallelized with mce-sort1
-(only string sorting currently).
+and mce-sort2 (only string sorting currently).
 

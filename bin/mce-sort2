@@ -92,8 +92,8 @@ DESCRIPTION
    -r                 Reverse output order
 
 EXAMPLES
-   mce-sort --maxworkers=8 --bm --check --no-output -e tr-radix ascii.4gb
-   mce-sort --maxworkers=4 -e tr-radix ascii.4gb > sorted.4gb
+   mce-sort2 --maxworkers=8 --bm --check --no-output -e tr-radix ascii.4gb
+   mce-sort2 --maxworkers=4 -e tr-radix ascii.4gb > sorted.4gb
 
 ::_USAGE_BLOCK_END_::
 
@@ -430,10 +430,10 @@ my ($chunk_size, $start_a, $start_b, $lapse);
 
 my $file_size = -s $file;
 
-if    ($file_size > 67_108_864 * 32) { $chunk_size = '8M'; }
-elsif ($file_size > 67_108_864 * 16) { $chunk_size = '4M'; }
-elsif ($file_size > 67_108_864 *  8) { $chunk_size = '2M'; }
-else                                 { $chunk_size = '1M'; }
+if    ($file_size > 67_108_864 * 32) { $chunk_size = '32M'; }
+elsif ($file_size > 67_108_864 * 16) { $chunk_size = '16M'; }
+elsif ($file_size > 67_108_864 *  8) { $chunk_size =  '8M'; }
+else                                 { $chunk_size =  '4M'; }
 
 foreach my $bucket ( 32 .. 126) {
    open my $fh, ">", "$tmp_dir/$bucket";
