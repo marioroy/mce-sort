@@ -166,7 +166,7 @@ BEGIN {
    mkdir "${base_dir}/.Inline" unless -d "${base_dir}/.Inline";
 }
 
-use Inline 'C' => Config => CCFLAGSEX => '-O2';
+use Inline 'C' => Config => CCFLAGSEX => '-O2', clean_after_build => 0;
 use Inline 'C' => <<'END_C';
 
    #include <stdlib.h>
