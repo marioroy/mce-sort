@@ -541,7 +541,7 @@ if (@order) {
       my $fail = (exists $bm{'FAIL'}) ? $bm{'FAIL'} : 0; delete $bm{'FAIL'};
 
       my $d = 0.0; $d += $bm{$_} for (keys %bm);
-      $d = ($last_sort_time - $start_b) / $d;
+      $d = ($last_sort_time - $start_b) / $d if $d;
 
       printf STDERR "          load partitions : %14.06f\n", $bm{'LOAD'} * $d;
       printf STDERR "          fill ptr arrays : %14.06f\n", $bm{'PTRA'} * $d;
