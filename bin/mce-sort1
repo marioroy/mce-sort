@@ -57,7 +57,7 @@ use CpuAffinity;
 use MCE::Signal qw($tmp_dir -use_dev_shm);
 use MCE;
 
-use MCE::Queue;
+use MCE::Queue 1.818;
 
 ###############################################################################
 ## ----------------------------------------------------------------------------
@@ -437,7 +437,7 @@ MCE->new(
          my ($mce, $task_id, $task_name) = @_;
          return if ($mce->{user_args}->[0] eq 'part');
 
-         $Q->enqueue((undef) x 3);
+         $Q->end();
       }
 
    },{
