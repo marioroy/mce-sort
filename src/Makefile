@@ -1,7 +1,7 @@
 
 CC = g++
 
-CFLAGS = -Drestrict=__restrict__ -std=c++0x -O2 -DNDEBUG -march=native
+CFLAGS = -Drestrict=__restrict__ -std=gnu++0x -O2 -DNDEBUG -march=native
 LDFLAGS = 
 
 executables = bs-mkqs mr-merge ng-cradix tb-radix tr-radix
